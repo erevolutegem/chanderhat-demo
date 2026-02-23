@@ -8,8 +8,10 @@ export const useBackendStatus = () => {
     useEffect(() => {
         const checkStatus = async () => {
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}`);
-                if (response.ok) {
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dev.chanderhat.com';
+                const response = await fetch(`${apiUrl}/games/live`, { method: 'HEAD' });
+                // We check /games/live specifically since that's what we need
+                if (response.ok || response.status === 404 || response.status === 405) {
                     setStatus('online');
                 } else {
                     setStatus('offline');
@@ -20,6 +22,8 @@ export const useBackendStatus = () => {
         };
 
         checkStatus();
+        const interval = setInterval(checkStatus, 30000); // Check every 30s
+        return () => clearInterval(interval);
     }, []);
 
     return status;

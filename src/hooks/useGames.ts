@@ -19,7 +19,7 @@ export const useGames = () => {
             try {
                 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dev.chanderhat.com';
                 const response = await fetch(`${apiUrl}/games/live`);
-                if (!response.ok) throw new Error("Network response was not ok");
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
 
                 if (data && data.results) {

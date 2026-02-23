@@ -45,9 +45,9 @@ const GameGrid = ({ sportId }: GameGridProps) => {
                             <div className={`absolute inset-0 bg-gradient-to-br ${game.color} opacity-80 group-hover:opacity-100 transition-opacity`} />
 
                             <div className="absolute inset-0 p-4 flex flex-col justify-between">
-                                <span className="text-[10px] font-black tracking-widest bg-black/40 self-start px-2 py-1 rounded text-white/70 uppercase">
-                                    {game.provider}
-                                </span>
+                                <div className="flex-1">
+                                    {/* Provider badge removed per user request */}
+                                </div>
 
                                 <div>
                                     <h4 className="text-sm md:text-base font-black text-white leading-tight drop-shadow-md line-clamp-2">

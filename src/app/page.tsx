@@ -12,7 +12,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-primary-dark relative">
-      <div className="fixed top-0 left-0 z-[9999] bg-accent-yellow text-primary-dark text-xs font-black px-4 py-1 shadow-2xl tracking-tighter italic">TOKEN_CHECK_v7.4.0</div>
+      <div className="fixed top-0 left-0 z-[9999] bg-accent-yellow text-primary-dark text-xs font-black px-4 py-1 shadow-2xl tracking-tighter italic">HYBRID_SIMULATOR_v8.0.0</div>
       <Navbar />
       <main>
         <HeroCarousel />

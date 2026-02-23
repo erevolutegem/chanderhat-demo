@@ -15,19 +15,19 @@ const categories = [
 
 const GameMenu = () => {
     return (
-        <div className="w-full bg-primary-dark py-6 px-4">
-            <div className="max-w-7xl mx-auto flex overflow-x-auto gap-4 scrollbar-hide">
+        <div className="w-full bg-primary-dark py-4 md:py-6 px-4">
+            <div className="max-w-7xl mx-auto flex overflow-x-auto gap-3 md:gap-4 scrollbar-hide pb-2 mask-linear-gradient">
                 {categories.map((cat) => (
                     <div
                         key={cat.name}
-                        className="flex-shrink-0 min-w-[120px] bg-white/5 border border-white/5 rounded-xl p-4 flex flex-col items-center gap-2 cursor-pointer hover:bg-white/10 hover:border-accent-yellow/30 transition-all group"
+                        className="flex-shrink-0 min-w-[100px] md:min-w-[120px] bg-white/5 border border-white/5 rounded-xl p-3 md:p-4 flex flex-col items-center gap-2 cursor-pointer hover:bg-white/10 hover:border-accent-yellow/30 transition-all group"
                     >
-                        <div className={cn("p-3 rounded-full bg-white/5 group-hover:scale-110 transition-all", cat.color)}>
-                            <cat.icon className="w-6 h-6" />
+                        <div className={cn("p-2.5 md:p-3 rounded-full bg-white/5 group-hover:scale-110 transition-all", cat.color)}>
+                            <cat.icon className="w-5 h-5 md:w-6 md:h-6" />
                         </div>
-                        <span className="text-sm font-bold text-white/80 group-hover:text-white">{cat.name}</span>
+                        <span className="text-xs md:text-sm font-bold text-white/80 group-hover:text-white">{cat.name}</span>
                         {cat.live > 0 && (
-                            <span className="text-[10px] bg-accent-red text-white px-2 py-0.5 rounded-full font-black animate-pulse">
+                            <span className="text-[9px] md:text-[10px] bg-accent-red text-white px-2 py-0.5 rounded-full font-black animate-pulse">
                                 {cat.live} LIVE
                             </span>
                         )}

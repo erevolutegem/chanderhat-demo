@@ -24,17 +24,17 @@ const HeroCarousel = () => {
             {banners.map((banner, index) => (
                 <div
                     key={banner.id}
-                    className={`absolute inset-0 transition-opacity duration-1000 flex items-center px-12 md:px-24 ${index === current ? "opacity-100" : "opacity-0"}`}
+                    className={`absolute inset-0 transition-opacity duration-1000 flex items-center px-6 md:px-24 ${index === current ? "opacity-100" : "opacity-0"}`}
                 >
                     <div className={`absolute inset-0 ${banner.color} opacity-90`} />
                     <div className="relative z-10 max-w-2xl space-y-4">
-                        <h2 className="text-4xl md:text-6xl font-black italic text-white tracking-tight leading-tight">
+                        <h2 className="text-3xl sm:text-4xl md:text-6xl font-black italic text-white tracking-tight leading-tight">
                             {banner.title}
                         </h2>
-                        <p className="text-lg md:text-xl text-white/80 font-medium">
+                        <p className="text-base md:text-xl text-white/80 font-medium max-w-xs md:max-w-none">
                             {banner.desc}
                         </p>
-                        <button className="bg-accent-yellow hover:bg-yellow-500 text-primary-dark font-black px-8 py-3 rounded-full transition-all hover:scale-105 shadow-xl text-sm uppercase">
+                        <button className="bg-accent-yellow hover:bg-yellow-500 text-primary-dark font-black px-6 md:px-8 py-2 md:py-3 rounded-full transition-all hover:scale-105 shadow-xl text-xs md:text-sm uppercase">
                             Join Now
                         </button>
                     </div>

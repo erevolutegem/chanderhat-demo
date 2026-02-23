@@ -57,18 +57,10 @@ export const useGames = (sportId?: number) => {
             } catch (err: any) {
                 console.error("[useGames] Fatal error:", err);
                 setError(err.message);
+                setGames([]); // Clear games on fetch error
             } finally {
                 setLoading(false);
             }
-
-            // If we reached here without returning, use fallback
-            console.warn("[useGames] Showing fallback games.");
-            const fallbackGames = [
-                { id: 201, name: "Manchester City vs Real Madrid", type: "Soccer", provider: "BETSAPI", color: "from-blue-600 to-indigo-900", odds: [{ name: "1", value: "2.10" }, { name: "X", value: "3.40" }, { name: "2", value: "3.20" }] },
-                { id: 202, name: "India vs Pakistan (T20)", type: "Cricket", provider: "BETSAPI", color: "from-blue-600 to-sky-900", odds: [{ name: "1", value: "1.80" }, { name: "2", value: "2.00" }] },
-                { id: 203, name: "Novak Djokovic vs Rafael Nadal", type: "Tennis", provider: "BETSAPI", color: "from-pink-600 to-purple-900", odds: [{ name: "1", value: "1.40" }, { name: "2", value: "2.80" }] },
-            ];
-            setGames(fallbackGames);
         };
 
         fetchGames();

@@ -48,6 +48,8 @@ export const useGames = (sportId?: number) => {
                     }));
                     setGames(mappedGames);
                     return;
+                } else if (data && data.debug && Array.isArray(data.debug) && data.debug.length > 0) {
+                    setError(`API Diagnostic: ${data.debug.join(' | ')}`);
                 } else if (data && data.error) {
                     setError(`API Error: ${data.error}`);
                 } else {
@@ -57,7 +59,7 @@ export const useGames = (sportId?: number) => {
             } catch (err: any) {
                 console.error("[useGames] Fatal error:", err);
                 setError(err.message);
-                setGames([]); // Clear games on fetch error
+                setGames([]);
             } finally {
                 setLoading(false);
             }

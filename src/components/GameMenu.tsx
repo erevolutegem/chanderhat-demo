@@ -1,36 +1,60 @@
 "use client";
 
 import React from "react";
-import { Trophy, Dribbble, Ghost, Target, Play, Flame } from "lucide-react";
+import { Trophy, Dribbble, Ghost, Target, Play, Flame, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const categories = [
-    { name: "Sports", icon: Dribbble, live: 12, color: "text-accent-blue" },
-    { name: "Casino", icon: Trophy, live: 5, color: "text-accent-yellow" },
-    { name: "Live", icon: Flame, live: 24, color: "text-accent-red" },
-    { name: "Virtual", icon: Ghost, live: 0, color: "text-purple-400" },
-    { name: "Table", icon: Target, live: 3, color: "text-emerald-400" },
-    { name: "Slots", icon: Play, live: 15, color: "text-orange-400" },
+    { name: "Sports", id: 1, icon: Dribbble, color: "text-blue-400", count: "12 LIVE" },
+    { name: "Casino", id: 999, icon: Trophy, color: "text-yellow-400", count: "5 LIVE" },
+    { name: "Live", id: undefined, icon: Flame, color: "text-red-400", count: "24 LIVE" },
+    { name: "Virtual", id: 18, icon: Ghost, color: "text-purple-400", count: "" },
+    { name: "Table", id: 13, icon: Target, color: "text-emerald-400", count: "3 LIVE" },
+    { name: "Slots", id: 998, icon: Play, color: "text-orange-400", count: "15 LIVE" },
 ];
 
-const GameMenu = () => {
+interface GameMenuProps {
+    onSelectSport: (id: number | undefined) => void;
+    selectedSport: number | undefined;
+}
+
+const GameMenu = ({ onSelectSport, selectedSport }: GameMenuProps) => {
     return (
-        <div className="w-full bg-primary-dark py-4 md:py-6 px-4">
-            <div className="max-w-7xl mx-auto flex overflow-x-auto gap-3 md:gap-4 scrollbar-hide pb-2 mask-linear-gradient">
+        <div className="w-full bg-primary-dark py-4 md:py-6 px-4 relative">
+            <div className="absolute top-0 right-4 text-[8px] text-white/10 font-mono italic">SYNC_v4.0.0</div>
+            <div className="max-w-7xl mx-auto flex overflow-x-auto gap-4 md:gap-6 scrollbar-hide pb-2">
                 {categories.map((cat) => (
                     <div
                         key={cat.name}
-                        className="flex-shrink-0 min-w-[100px] md:min-w-[120px] bg-white/5 border border-white/5 rounded-xl p-3 md:p-4 flex flex-col items-center gap-2 cursor-pointer hover:bg-white/10 hover:border-accent-yellow/30 transition-all group"
+                        onClick={() => onSelectSport(cat.id)}
+                        className="flex-shrink-0 flex flex-col items-center gap-3 cursor-pointer group"
                     >
-                        <div className={cn("p-2.5 md:p-3 rounded-full bg-white/5 group-hover:scale-110 transition-all", cat.color)}>
-                            <cat.icon className="w-5 h-5 md:w-6 md:h-6" />
+                        <div className={cn(
+                            "w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/5 border flex items-center justify-center transition-all duration-300",
+                            (selectedSport === cat.id || (selectedSport === undefined && cat.id === undefined))
+                                ? "border-yellow-400 bg-white/10 shadow-[0_0_20px_rgba(250,204,21,0.2)]"
+                                : "border-white/5 group-hover:border-white/20 group-hover:bg-white/10"
+                        )}>
+                            <div className={cn("transition-transform duration-300 group-hover:scale-110", cat.color)}>
+                                <cat.icon className="w-8 h-8 md:w-10 md:h-10" />
+                            </div>
                         </div>
-                        <span className="text-xs md:text-sm font-bold text-white/80 group-hover:text-white">{cat.name}</span>
-                        {cat.live > 0 && (
-                            <span className="text-[9px] md:text-[10px] bg-accent-red text-white px-2 py-0.5 rounded-full font-black animate-pulse">
-                                {cat.live} LIVE
+
+                        <div className="flex flex-col items-center gap-1">
+                            <span className={cn(
+                                "text-xs md:text-sm font-bold transition-colors",
+                                (selectedSport === cat.id || (selectedSport === undefined && cat.id === undefined))
+                                    ? "text-white"
+                                    : "text-white/60 group-hover:text-white"
+                            )}>
+                                {cat.name}
                             </span>
-                        )}
+                            {cat.count && (
+                                <span className="text-[10px] font-black bg-red-600 text-white px-2 py-0.5 rounded-full scale-90 whitespace-nowrap">
+                                    {cat.count}
+                                </span>
+                            )}
+                        </div>
                     </div>
                 ))}
             </div>

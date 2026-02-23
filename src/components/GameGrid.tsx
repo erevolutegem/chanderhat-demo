@@ -4,8 +4,12 @@ import React from "react";
 import { Play, Loader2 } from "lucide-react";
 import { useGames } from "@/hooks/useGames";
 
-const GameGrid = () => {
-    const { games, loading } = useGames();
+interface GameGridProps {
+    sportId?: number;
+}
+
+const GameGrid = ({ sportId }: GameGridProps) => {
+    const { games, loading, error } = useGames(sportId);
 
     if (loading) {
         return (
@@ -18,9 +22,18 @@ const GameGrid = () => {
     return (
         <div className="w-full bg-primary-dark pb-12 px-4">
             <div className="max-w-7xl mx-auto">
+                {/* Error / Diagnostic Info */}
+                {games.length === 0 && error && (
+                    <div className="mb-6 p-4 rounded-xl bg-accent-red/10 border border-accent-red/20 text-accent-red text-center text-xs font-bold uppercase tracking-wider">
+                        Diagnostic: {error}
+                    </div>
+                )}
+
                 <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-black italic tracking-tight text-white/90">LIVE <span className="text-accent-yellow">MATCHES</span></h3>
-                    <button className="text-accent-yellow text-sm font-bold border-b border-accent-yellow/0 hover:border-accent-yellow transition-all pb-1">VIEW ALL</button>
+                    <h3 className="text-xl font-black italic tracking-tight text-white/90">
+                        {sportId ? "LIVE" : "FEATURED"} <span className="text-accent-yellow">MATCHES</span>
+                    </h3>
+                    <button className="text-accent-yellow text-sm font-bold border-b border-accent-yellow/0 hover:border-accent-yellow transition-all pb-1 uppercase">VIEW ALL</button>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
@@ -32,11 +45,36 @@ const GameGrid = () => {
                             <div className={`absolute inset-0 bg-gradient-to-br ${game.color} opacity-80 group-hover:opacity-100 transition-opacity`} />
 
                             <div className="absolute inset-0 p-4 flex flex-col justify-between">
-                                <span className="text-[10px] font-black tracking-widest bg-black/40 self-start px-2 py-1 rounded text-white/70">{game.provider}</span>
+                                <span className="text-[10px] font-black tracking-widest bg-black/40 self-start px-2 py-1 rounded text-white/70 uppercase">
+                                    {game.provider}
+                                </span>
 
                                 <div>
-                                    <h4 className="text-sm md:text-base font-black text-white leading-tight drop-shadow-md line-clamp-2">{game.name}</h4>
-                                    <p className="text-[10px] text-white/60 font-medium uppercase tracking-wider mt-1">{game.type}</p>
+                                    <h4 className="text-sm md:text-base font-black text-white leading-tight drop-shadow-md line-clamp-2">
+                                        {game.name}
+                                    </h4>
+                                    <p className="text-[10px] text-white/60 font-medium uppercase tracking-wider mt-1">
+                                        {game.type}
+                                    </p>
+
+                                    {/* Odds Section */}
+                                    {game.odds && game.odds.length > 0 && (
+                                        <div className="flex gap-2 mt-3 pointer-events-auto">
+                                            {game.odds.slice(0, 3).map((odd, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className="flex-1 bg-black/40 hover:bg-accent-yellow group/odd transition-all rounded-md py-1.5 flex flex-col items-center border border-white/5 active:scale-95 cursor-pointer"
+                                                >
+                                                    <span className="text-[8px] text-white/50 group-hover/odd:text-primary-dark font-bold uppercase truncate w-full text-center px-1">
+                                                        {odd.name || (idx === 0 ? "1" : idx === 1 ? "X" : "2")}
+                                                    </span>
+                                                    <span className="text-xs font-black text-accent-yellow group-hover/odd:text-primary-dark">
+                                                        {odd.value}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -49,7 +87,7 @@ const GameGrid = () => {
                         </div>
                     )) : (
                         <div className="col-span-full py-20 text-center text-white/30 font-bold italic uppercase tracking-widest border-2 border-dashed border-white/5 rounded-3xl">
-                            No Live Games Available
+                            {error ? "Unable to load live data" : "No Live Games Currently Available"}
                         </div>
                     )}
                 </div>

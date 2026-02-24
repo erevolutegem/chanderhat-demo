@@ -1,16 +1,29 @@
 import React from "react";
 import { cn } from "@/lib/utils";
+import { useSite } from "@/lib/SiteContext";
 
 const Footer = () => {
+    const { site } = useSite();
+    const displayName = site?.name || "PLAYBAJI";
+    const initial = displayName.charAt(0);
+    const part1 = displayName.substring(0, 4);
+    const part2 = displayName.substring(4);
+
     return (
-        <footer className="w-full bg-secondary-dark text-white/60 py-12 px-4 border-t border-white/5">
+        <footer className="w-full bg-secondary-dark text-white/60 py-12 px-4 border-t border-white/5 pb-24 lg:pb-12">
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
                 <div className="space-y-4">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-accent-yellow rounded-full flex items-center justify-center">
-                            <span className="text-primary-dark font-bold text-sm italic">PB</span>
+                        <div className="w-8 h-8 bg-accent-yellow rounded-full flex items-center justify-center overflow-hidden">
+                            {site?.logoUrl ? (
+                                <img src={site.logoUrl} alt={displayName} className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-primary-dark font-bold text-sm italic">{initial}</span>
+                            )}
                         </div>
-                        <span className="text-xl font-black italic tracking-tighter text-white">PLAY<span className="text-accent-yellow">BAJI</span></span>
+                        <span className="text-xl font-black italic tracking-tighter text-white uppercase">
+                            {part1}<span className="text-accent-yellow">{part2}</span>
+                        </span>
                     </div>
                     <p className="text-sm leading-relaxed">
                         The world's leading sports betting exchange. We provide the best odds and high-performance gaming experience.

@@ -4,11 +4,11 @@
   --color-primary-dark: #0b1624;
   --color-secondary-dark: #07101a;
   --color-accent-red: #d32f2f;
-  --color-accent-yellow: #ffc107;
-  --color-accent-blue: #00bcd4;
   --color-bkash: #e2136e;
   --color-nagad: #f7941d;
   --color-rocket: #8c3494;
+
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 :root {

@@ -1,18 +1,23 @@
-"use client";
-
 import React, { useState } from "react";
 import { Search, Menu, X, Clock, User, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBackendStatus } from "@/hooks/useBackendStatus";
-
+import { useSite } from "@/lib/SiteContext";
 import AuthModals from "./AuthModals";
 
 const Navbar = () => {
+    const { site } = useSite();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [authModal, setAuthModal] = useState<{ isOpen: boolean; type: "login" | "signup" }>({ isOpen: false, type: "login" });
     const backendStatus = useBackendStatus();
 
     const openAuth = (type: "login" | "signup") => setAuthModal({ isOpen: true, type });
+
+    // Initial branding logic
+    const displayName = site?.name || "PLAYBAJI";
+    const logoInitial = displayName.charAt(0);
+    const part1 = displayName.substring(0, 4);
+    const part2 = displayName.substring(4);
 
     return (
         <nav className="w-full bg-primary-dark text-white shadow-lg sticky top-0 z-50">
@@ -29,10 +34,16 @@ const Navbar = () => {
 
                     {/* Logo */}
                     <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className="w-10 h-10 bg-accent-yellow rounded-full flex items-center justify-center">
-                            <span className="text-primary-dark font-bold text-xl italic">PB</span>
+                        <div className="w-10 h-10 bg-accent-yellow rounded-full flex items-center justify-center overflow-hidden">
+                            {site?.logoUrl ? (
+                                <img src={site.logoUrl} alt={displayName} className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-primary-dark font-bold text-xl italic">{logoInitial}</span>
+                            )}
                         </div>
-                        <span className="text-xl md:text-2xl font-black italic tracking-tighter text-white uppercase">PLAY<span className="text-accent-yellow">BAJI</span></span>
+                        <span className="text-xl md:text-2xl font-black italic tracking-tighter text-white uppercase">
+                            {part1}<span className="text-accent-yellow">{part2}</span>
+                        </span>
                     </div>
                 </div>
 

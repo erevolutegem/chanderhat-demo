@@ -5,9 +5,14 @@ import { Search, Menu, X, Clock, User, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useBackendStatus } from "@/hooks/useBackendStatus";
 
+import AuthModals from "./AuthModals";
+
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [authModal, setAuthModal] = useState<{ isOpen: boolean; type: "login" | "signup" }>({ isOpen: false, type: "login" });
     const backendStatus = useBackendStatus();
+
+    const openAuth = (type: "login" | "signup") => setAuthModal({ isOpen: true, type });
 
     return (
         <nav className="w-full bg-primary-dark text-white shadow-lg sticky top-0 z-50">
@@ -64,11 +69,21 @@ const Navbar = () => {
                         </div>
                     </div>
                     {/* Mobile Auth Button */}
-                    <button className="bg-accent-red hover:bg-red-700 text-white font-bold px-4 md:px-6 py-1.5 rounded transition-colors text-sm uppercase whitespace-nowrap">
+                    <button
+                        onClick={() => openAuth('login')}
+                        className="bg-accent-red hover:bg-red-700 text-white font-bold px-4 md:px-6 py-1.5 rounded transition-colors text-sm uppercase whitespace-nowrap"
+                    >
                         Login
                     </button>
                 </div>
             </div>
+
+            {/* Auth Modals Container */}
+            <AuthModals
+                isOpen={authModal.isOpen}
+                onClose={() => setAuthModal({ ...authModal, isOpen: false })}
+                type={authModal.type}
+            />
 
             {/* Desktop Main Nav Links - Hidden on Mobile */}
             <div className="hidden lg:block bg-secondary-dark border-y border-white/5">

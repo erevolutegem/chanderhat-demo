@@ -31,18 +31,18 @@ const OwnerSidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (v: b
             )}
 
             <aside className={cn(
-                "fixed top-0 left-0 bottom-0 z-[1001] w-72 bg-secondary-dark border-r border-white/5 transition-transform duration-300 lg:translate-x-0",
+                "fixed top-0 left-0 bottom-0 z-[1001] w-72 bg-secondary-dark border-r border-white/5 transition-transform duration-500 ease-in-out lg:translate-x-0 shadow-2xl lg:shadow-none",
                 isOpen ? "translate-x-0" : "-translate-x-full"
             )}>
                 <div className="flex flex-col h-full">
                     {/* Header */}
                     <div className="p-6 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-accent-yellow rounded-xl flex items-center justify-center rotate-3 shadow-lg shadow-accent-yellow/20">
-                                <Globe className="w-6 h-6 text-primary-dark" />
+                        <div className="flex items-center gap-2.5 md:gap-3">
+                            <div className="w-8 h-8 md:w-10 md:h-10 bg-accent-yellow rounded-lg md:rounded-xl flex items-center justify-center rotate-3 shadow-lg shadow-accent-yellow/20">
+                                <Globe className="w-5 h-5 md:w-6 md:h-6 text-primary-dark" />
                             </div>
                             <div>
-                                <h2 className="text-white font-black text-xl italic tracking-tighter leading-tight">OWNER <span className="text-accent-yellow text-sm block -mt-1 non-italic font-black">PANEL</span></h2>
+                                <h2 className="text-white font-black text-lg md:text-xl italic tracking-tighter leading-tight uppercase">OWNER <span className="text-accent-yellow text-[9px] md:text-sm block -mt-0.5 md:-mt-1 non-italic font-black">PANEL</span></h2>
                             </div>
                         </div>
                         <button onClick={() => setIsOpen(false)} className="lg:hidden p-2 text-white/40 hover:text-white">
@@ -50,14 +50,14 @@ const OwnerSidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (v: b
                         </button>
                     </div>
 
-                    {/* Menu */}
-                    <nav className="flex-1 px-4 py-6 space-y-2">
+                    <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
                         {menuItems.map((item) => (
                             <Link
                                 key={item.href}
                                 href={item.href}
+                                onClick={() => setIsOpen(false)}
                                 className={cn(
-                                    "flex items-center gap-4 px-4 py-3.5 rounded-xl font-bold transition-all group",
+                                    "flex items-center gap-4 px-4 py-3 rounded-xl font-bold transition-all group shrink-0",
                                     pathname === item.href
                                         ? "bg-accent-yellow text-primary-dark shadow-lg shadow-accent-yellow/20"
                                         : "text-white/40 hover:bg-white/5 hover:text-white"
@@ -67,9 +67,9 @@ const OwnerSidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (v: b
                                     "transition-colors",
                                     pathname === item.href ? "text-primary-dark" : "text-accent-yellow group-hover:scale-110"
                                 )}>
-                                    {item.icon}
+                                    {React.cloneElement(item.icon as React.ReactElement<any>, { className: "w-4 h-4 md:w-5 h-5" })}
                                 </span>
-                                <span className="text-sm uppercase tracking-widest">{item.label}</span>
+                                <span className="text-[10px] md:text-xs lg:text-sm uppercase tracking-widest leading-none">{item.label}</span>
                             </Link>
                         ))}
                     </nav>

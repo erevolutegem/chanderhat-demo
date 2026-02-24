@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { LayoutDashboard, Globe, Coins, Settings, Bell, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, Globe, Users, Coins, Settings, Bell, LogOut, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

@@ -12,6 +12,7 @@ const OwnerSidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (v: b
     const menuItems = [
         { icon: <LayoutDashboard className="w-5 h-5" />, label: "Overview", href: "/dashboard/owner" },
         { icon: <Globe className="w-5 h-5" />, label: "My Sites", href: "/dashboard/owner/sites" },
+        { icon: <Users className="w-5 h-5" />, label: "Players", href: "/dashboard/owner/users" },
         { icon: <Coins className="w-5 h-5" />, label: "Currencies", href: "/dashboard/owner/currencies" },
         { icon: <Settings className="w-5 h-5" />, label: "Settings", href: "/dashboard/owner/settings" },
     ];
@@ -34,11 +35,11 @@ const OwnerSidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (v: b
                     {/* Header */}
                     <div className="p-6 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-accent-yellow rounded-xl flex items-center justify-center rotate-3">
+                            <div className="w-10 h-10 bg-accent-yellow rounded-xl flex items-center justify-center rotate-3 shadow-lg shadow-accent-yellow/20">
                                 <Globe className="w-6 h-6 text-primary-dark" />
                             </div>
                             <div>
-                                <h2 className="text-white font-black text-xl italic tracking-tighter">OWNER <span className="text-accent-yellow text-sm">PRO</span></h2>
+                                <h2 className="text-white font-black text-xl italic tracking-tighter leading-tight">OWNER <span className="text-accent-yellow text-sm block -mt-1 non-italic font-black">PANEL</span></h2>
                             </div>
                         </div>
                         <button onClick={() => setIsOpen(false)} className="lg:hidden p-2 text-white/40 hover:text-white">

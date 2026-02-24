@@ -26,6 +26,68 @@ const OwnerOverview = () => {
                 <StatCard icon={<Activity className="w-6 h-6" />} label="Active Sessions" value="1,204" trend="Live" pulse />
             </div>
 
+            {/* Revenue Analytics Chart */}
+            <div className="bg-secondary-dark rounded-[2.5rem] border border-white/5 p-8 shadow-2xl relative overflow-hidden group">
+                <div className="flex items-center justify-between mb-12">
+                    <div>
+                        <h3 className="text-xl font-black uppercase text-white flex items-center gap-3">
+                            <div className="w-2 h-6 bg-accent-yellow rounded-full" />
+                            Revenue Analytics
+                        </h3>
+                        <p className="text-white/20 text-[10px] font-black uppercase tracking-widest mt-1">Net revenue growth over the last 30 days</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-4 px-4 py-2 bg-white/5 rounded-xl border border-white/5">
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-accent-yellow" />
+                                <span className="text-[10px] font-black text-white/40 uppercase">This Month</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-white/20" />
+                                <span className="text-[10px] font-black text-white/40 uppercase">Prev Month</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="h-64 w-full relative">
+                    <svg viewBox="0 0 1000 200" className="w-full h-full preserve-3d">
+                        {/* Grid Lines */}
+                        {[0, 50, 100, 150].map(y => (
+                            <line key={y} x1="0" y1={y} x2="1000" y2={y} stroke="white" strokeOpacity="0.03" strokeWidth="1" />
+                        ))}
+
+                        {/* Area Gradient */}
+                        <defs>
+                            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#ffc107" stopOpacity="0.2" />
+                                <stop offset="100%" stopColor="#ffc107" stopOpacity="0" />
+                            </linearGradient>
+                        </defs>
+
+                        {/* Chart Path */}
+                        <path
+                            d="M 0,180 Q 50,170 100,140 T 200,100 T 300,150 T 400,80 T 500,60 T 600,120 T 700,90 T 800,40 T 900,70 T 1000,30 V 200 H 0 Z"
+                            fill="url(#chartGradient)"
+                            className="animate-pulse duration-[4000ms]"
+                        />
+                        <path
+                            d="M 0,180 Q 50,170 100,140 T 200,100 T 300,150 T 400,80 T 500,60 T 600,120 T 700,90 T 800,40 T 900,70 T 1000,30"
+                            fill="none"
+                            stroke="#ffc107"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                            className="drop-shadow-[0_0_8px_rgba(255,193,7,0.5)]"
+                        />
+
+                        {/* Data Points */}
+                        {[100, 300, 500, 800, 1000].map((x, i) => (
+                            <circle key={i} cx={x} cy={i === 4 ? 30 : (x / 10)} r="4" fill="#ffc107" />
+                        ))}
+                    </svg>
+                </div>
+            </div>
+
             {/* Sites List (Simplified for Overview) */}
             <div className="bg-secondary-dark rounded-[2.5rem] border border-white/5 p-8 shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-5">

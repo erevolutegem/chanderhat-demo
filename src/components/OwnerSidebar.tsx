@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { LayoutDashboard, Globe, Users, Coins, Settings, Bell, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, Globe, Users, Coins, Settings, Bell, LogOut, Menu, X, Layout, UsersRound, Key, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -13,6 +13,9 @@ const OwnerSidebar = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (v: b
         { icon: <LayoutDashboard className="w-5 h-5" />, label: "Overview", href: "/dashboard/owner" },
         { icon: <Globe className="w-5 h-5" />, label: "My Sites", href: "/dashboard/owner/sites" },
         { icon: <Users className="w-5 h-5" />, label: "Players", href: "/dashboard/owner/users" },
+        { icon: <Layout className="w-5 h-5" />, label: "Templates", href: "/dashboard/owner/templates" },
+        { icon: <UsersRound className="w-5 h-5" />, label: "WL Owners", href: "/dashboard/owner/owners" },
+        { icon: <Zap className="w-5 h-5" />, label: "API Settings", href: "/dashboard/owner/api" },
         { icon: <Coins className="w-5 h-5" />, label: "Currencies", href: "/dashboard/owner/currencies" },
         { icon: <Settings className="w-5 h-5" />, label: "Settings", href: "/dashboard/owner/settings" },
     ];

@@ -10,8 +10,23 @@ interface AuthModalProps {
     type: "login" | "signup";
 }
 
+import { useRouter } from "next/navigation";
+
 const AuthModals = ({ isOpen, onClose, type }: AuthModalProps) => {
+    const router = useRouter();
+    const [formData, setFormData] = React.useState({ email: "", password: "", name: "" });
     if (!isOpen) return null;
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Mock Login for Site Owner
+        if (type === "login" && formData.email === "owner" && formData.password === "Owner@321") {
+            onClose();
+            router.push("/dashboard/owner");
+            return;
+        }
+        console.log("Form submitted:", formData);
+    };
 
     return (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
@@ -36,12 +51,29 @@ const AuthModals = ({ isOpen, onClose, type }: AuthModalProps) => {
                         </button>
                     </div>
 
-                    <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                    <form className="space-y-4" onSubmit={handleSubmit}>
                         {type === "signup" && (
-                            <InputField icon={<User className="w-4 h-4" />} placeholder="Full Name" />
+                            <InputField
+                                icon={<User className="w-4 h-4" />}
+                                placeholder="Full Name"
+                                value={formData.name}
+                                onChange={(val) => setFormData({ ...formData, name: val })}
+                            />
                         )}
-                        <InputField icon={<Mail className="w-4 h-4" />} placeholder="Email Address" type="email" />
-                        <InputField icon={<Lock className="w-4 h-4" />} placeholder="Password" type="password" />
+                        <InputField
+                            icon={<Mail className="w-4 h-4" />}
+                            placeholder="Email Address"
+                            type="text"
+                            value={formData.email}
+                            onChange={(val) => setFormData({ ...formData, email: val })}
+                        />
+                        <InputField
+                            icon={<Lock className="w-4 h-4" />}
+                            placeholder="Password"
+                            type="password"
+                            value={formData.password}
+                            onChange={(val) => setFormData({ ...formData, password: val })}
+                        />
 
                         <button className="w-full bg-accent-yellow hover:bg-yellow-500 text-primary-dark font-black py-3.5 rounded-xl transition-all active:scale-[0.98] shadow-lg shadow-accent-yellow/10 uppercase tracking-widest text-sm mt-4">
                             {type === "login" ? "Sign In" : "Register Now"}
@@ -66,13 +98,15 @@ const AuthModals = ({ isOpen, onClose, type }: AuthModalProps) => {
     );
 };
 
-const InputField = ({ icon, placeholder, type = "text" }: { icon: React.ReactNode; placeholder: string; type?: string }) => (
+const InputField = ({ icon, placeholder, type = "text", value, onChange }: { icon: React.ReactNode; placeholder: string; type?: string; value: string; onChange: (v: string) => void }) => (
     <div className="relative group/input">
         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within/input:text-accent-yellow transition-colors">
             {icon}
         </div>
         <input
             type={type}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             className="w-full bg-white/5 border border-white/5 focus:border-accent-yellow/50 outline-none rounded-xl py-3.5 pl-12 pr-4 text-sm text-white transition-all placeholder:text-white/20"
         />

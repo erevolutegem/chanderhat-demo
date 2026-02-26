@@ -1,36 +1,42 @@
 "use client";
 
 import React from "react";
-import { Home, Trophy, User, PlusCircle, LayoutGrid } from "lucide-react";
+import { Home, Trophy, Wallet, LayoutGrid, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const MobileBottomNav = () => {
-    return (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[999] bg-primary-dark border-t border-white/10 flex items-center justify-around h-16 px-2 safe-area-pb">
-            <NavItem icon={<Home className="w-5 h-5" />} label="Home" active />
-            <NavItem icon={<Trophy className="w-5 h-5" />} label="Sports" />
+const ITEMS = [
+    { icon: Home, label: "Home", active: true },
+    { icon: Trophy, label: "Sports" },
+    { icon: Wallet, label: "Deposit", cta: true },
+    { icon: LayoutGrid, label: "Promotions" },
+    { icon: User, label: "Account" },
+];
 
-            <div className="relative -mt-8">
-                <div className="w-14 h-14 bg-gradient-to-b from-accent-yellow to-orange-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(255,193,7,0.4)] border-4 border-primary-dark">
-                    <PlusCircle className="w-8 h-8 text-primary-dark fill-current" />
-                </div>
-                <span className="text-[10px] font-bold text-accent-yellow block text-center mt-1">Deposit</span>
-            </div>
-
-            <NavItem icon={<LayoutGrid className="w-5 h-5" />} label="Promotion" />
-            <NavItem icon={<User className="w-5 h-5" />} label="Profile" />
-        </div>
-    );
-};
-
-const NavItem = ({ icon, label, active }: { icon: React.ReactNode; label: string; active?: boolean }) => (
-    <button className={cn(
-        "flex flex-col items-center gap-1 transition-all",
-        active ? "text-accent-yellow" : "text-white/40 hover:text-white/60"
-    )}>
-        {icon}
-        <span className="text-[10px] font-bold uppercase tracking-tighter">{label}</span>
-    </button>
+const MobileBottomNav = () => (
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[999] border-t border-[#2d3348] flex items-center h-14 px-2" style={{ background: "#1a1f2e" }}>
+        {ITEMS.map(({ icon: Icon, label, active, cta }) => (
+            <button
+                key={label}
+                className={cn(
+                    "flex-1 flex flex-col items-center justify-center gap-0.5 transition-all py-2",
+                    cta
+                        ? "text-green-400"
+                        : active
+                            ? "text-green-400"
+                            : "text-slate-600 hover:text-slate-400"
+                )}
+            >
+                {cta ? (
+                    <div className="w-9 h-9 -mt-5 bg-green-600 rounded-full flex items-center justify-center shadow-lg shadow-green-600/30 border-2 border-[#1a1f2e]">
+                        <Icon className="w-5 h-5 text-white" />
+                    </div>
+                ) : (
+                    <Icon className="w-5 h-5" />
+                )}
+                <span className={cn("text-[9px] font-bold uppercase tracking-tight", cta && "-mt-1")}>{label}</span>
+            </button>
+        ))}
+    </div>
 );
 
 export default MobileBottomNav;

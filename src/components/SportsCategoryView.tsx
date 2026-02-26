@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Activity, Clock, ChevronRight, Loader2, Calendar, CalendarDays, Zap } from "lucide-react";
+import { Loader2, Activity, Calendar, CalendarDays, ChevronRight, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// ─── Types ─────────────────────────────────────────────────────────────────
 export interface MatchEvent {
     id: string;
     sport_id: string | null;
@@ -21,25 +20,17 @@ export interface MatchEvent {
 
 type TabKey = "inplay" | "today" | "tomorrow";
 
-// ─── Tab Config ─────────────────────────────────────────────────────────────
 const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
     { key: "inplay", label: "In Play", icon: <Activity className="w-3.5 h-3.5" /> },
     { key: "today", label: "Today", icon: <Calendar className="w-3.5 h-3.5" /> },
     { key: "tomorrow", label: "Tomorrow", icon: <CalendarDays className="w-3.5 h-3.5" /> },
 ];
 
-// ─── Sports Config ──────────────────────────────────────────────────────────
 const SPORT_LABELS: Record<string, string> = {
-    "1": "Soccer",
-    "3": "Cricket",
-    "13": "Tennis",
-    "18": "Basketball",
-    "12": "American Football",
-    "4": "Ice Hockey",
-    "16": "Baseball",
+    "1": "Soccer", "3": "Cricket", "13": "Tennis",
+    "18": "Basketball", "12": "American Football", "4": "Ice Hockey",
 };
 
-// ─── Main Component ────────────────────────────────────────────────────────
 interface SportsCategoryViewProps {
     sportId?: number;
     onSelectGame: (id: string) => void;
@@ -51,7 +42,6 @@ const SportsCategoryView = ({ sportId, onSelectGame }: SportsCategoryViewProps) 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // When sport changes, reset to inplay tab
     useEffect(() => {
         setActiveTab("inplay");
     }, [sportId]);
@@ -66,16 +56,14 @@ const SportsCategoryView = ({ sportId, onSelectGame }: SportsCategoryViewProps) 
 
         const load = async () => {
             try {
-                // ALL tabs use /games/live — inplay (default), today, tomorrow via ?tab= param
                 const params = new URLSearchParams();
                 if (activeTab !== "inplay") params.set("tab", activeTab);
                 if (sportId) params.set("sportId", String(sportId));
                 const qs = params.toString();
                 const url = `${apiUrl}/games/live${qs ? `?${qs}` : ""}`;
 
-                console.log("[SportsCategoryView] Fetching:", url);
                 const resp = await fetch(url, { cache: "no-store" });
-                if (!resp.ok) throw new Error(`HTTP ${resp.status} — ${url}`);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
 
                 const data = await resp.json();
                 if (cancelled) return;
@@ -84,25 +72,17 @@ const SportsCategoryView = ({ sportId, onSelectGame }: SportsCategoryViewProps) 
                     setMatches(data.results);
                 } else {
                     setMatches([]);
-                    setError(data?.error || "No matches available");
+                    setError(data?.error || null);
                 }
             } catch (err: any) {
-                if (!cancelled) {
-                    setError(err.message);
-                    setMatches([]);
-                }
+                if (!cancelled) { setError(err.message); setMatches([]); }
             } finally {
                 if (!cancelled) setLoading(false);
             }
         };
 
         load();
-
-        // Only auto-refresh on inplay tab
-        let interval: NodeJS.Timeout | undefined;
-        if (activeTab === "inplay") {
-            interval = setInterval(load, 30000);
-        }
+        const interval = activeTab === "inplay" ? setInterval(load, 30000) : undefined;
 
         return () => {
             cancelled = true;
@@ -110,7 +90,7 @@ const SportsCategoryView = ({ sportId, onSelectGame }: SportsCategoryViewProps) 
         };
     }, [sportId, activeTab]);
 
-    // Group by league
+    // Group matches by league
     const grouped = matches.reduce<Record<string, MatchEvent[]>>((acc, m) => {
         const key = m.league || "Other";
         if (!acc[key]) acc[key] = [];
@@ -118,37 +98,35 @@ const SportsCategoryView = ({ sportId, onSelectGame }: SportsCategoryViewProps) 
         return acc;
     }, {});
 
-    const sportLabel = sportId ? (SPORT_LABELS[String(sportId)] ?? "Sport") : "All Sports";
+    const sportLabel = sportId ? SPORT_LABELS[String(sportId)] || "Sport" : "All Sports";
 
     return (
-        <div className="w-full bg-primary-dark pb-12 px-4">
-            <div className="max-w-7xl mx-auto">
+        <div className="flex-1 min-h-screen" style={{ background: "#0f1219" }}>
+            <div className="max-w-full">
 
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                        <h3 className="text-xl font-black italic tracking-tight text-white">
-                            {sportLabel} <span className="text-accent-yellow">MATCHES</span>
-                        </h3>
+                {/* Header row */}
+                <div className="flex items-center justify-between px-4 pt-4 pb-3">
+                    <div className="flex items-center gap-2">
+                        <h2 className="text-base font-bold text-white">{sportLabel}</h2>
                         {activeTab === "inplay" && matches.length > 0 && (
-                            <span className="flex items-center gap-1 text-[10px] font-black bg-red-600 text-white px-2 py-0.5 rounded-full animate-pulse">
-                                <Zap className="w-3 h-3" /> {matches.length} LIVE
+                            <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-600/20 text-red-400 border border-red-600/20">
+                                <span className="live-dot" /> {matches.length} LIVE
                             </span>
                         )}
                     </div>
                 </div>
 
-                {/* Tabs */}
-                <div className="flex items-center gap-1 mb-6 bg-white/5 p-1 rounded-xl w-fit border border-white/5">
+                {/* Tab switcher */}
+                <div className="flex items-center gap-1 px-4 mb-3">
                     {TABS.map((tab) => (
                         <button
                             key={tab.key}
                             onClick={() => setActiveTab(tab.key)}
                             className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all",
+                                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all",
                                 activeTab === tab.key
-                                    ? "bg-accent-yellow text-primary-dark shadow-lg"
-                                    : "text-white/40 hover:text-white hover:bg-white/5"
+                                    ? "bg-green-600 text-white"
+                                    : "bg-[#1e2433] text-slate-400 hover:text-white hover:bg-[#242938]"
                             )}
                         >
                             {tab.icon}
@@ -159,27 +137,25 @@ const SportsCategoryView = ({ sportId, onSelectGame }: SportsCategoryViewProps) 
 
                 {/* Content */}
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center h-48 gap-4">
-                        <Loader2 className="w-8 h-8 text-accent-yellow animate-spin" />
-                        <p className="text-white/30 text-xs font-bold uppercase tracking-widest">Loading matches...</p>
-                    </div>
-                ) : error && matches.length === 0 ? (
-                    <div className="py-16 text-center text-white/30 font-bold italic uppercase tracking-widest border-2 border-dashed border-white/5 rounded-3xl">
-                        {error}
+                    <div className="flex flex-col items-center justify-center py-20 gap-3">
+                        <Loader2 className="w-7 h-7 text-green-500 animate-spin" />
+                        <p className="text-sm text-slate-500">Loading matches...</p>
                     </div>
                 ) : matches.length === 0 ? (
-                    <div className="py-16 text-center text-white/30 font-bold italic uppercase tracking-widest border-2 border-dashed border-white/5 rounded-3xl">
-                        No Matches Available
+                    <div className="flex flex-col items-center justify-center py-20 gap-3 mx-4 rounded-2xl border border-dashed border-[#2d3348]">
+                        <Activity className="w-8 h-8 text-slate-700" />
+                        <p className="text-sm font-semibold text-slate-500">No matches available</p>
+                        {error && <p className="text-xs text-slate-600 max-w-xs text-center">{error}</p>}
                     </div>
                 ) : (
-                    <div className="space-y-6">
+                    <div className="space-y-px px-4 pb-8">
                         {Object.entries(grouped).map(([league, events]) => (
-                            <LeagueSection
+                            <LeagueBlock
                                 key={league}
                                 league={league}
                                 events={events}
-                                isInPlay={activeTab === "inplay"}
-                                onSelectGame={onSelectGame}
+                                isLive={activeTab === "inplay"}
+                                onSelect={onSelectGame}
                             />
                         ))}
                     </div>
@@ -189,146 +165,106 @@ const SportsCategoryView = ({ sportId, onSelectGame }: SportsCategoryViewProps) 
     );
 };
 
-// ─── League Section ─────────────────────────────────────────────────────────
-const LeagueSection = ({
-    league, events, isInPlay, onSelectGame,
-}: {
-    league: string;
-    events: MatchEvent[];
-    isInPlay: boolean;
-    onSelectGame: (id: string) => void;
+// ── League Block ─────────────────────────────────────────────────────────────
+const LeagueBlock = ({ league, events, isLive, onSelect }: {
+    league: string; events: MatchEvent[]; isLive: boolean; onSelect: (id: string) => void;
 }) => (
-    <div className="rounded-2xl overflow-hidden border border-white/5">
-        {/* League Header */}
-        <div className="flex items-center gap-3 px-4 py-3 bg-white/5 border-b border-white/5">
-            <div className="w-5 h-5 rounded bg-accent-yellow/20 flex items-center justify-center">
-                <Zap className="w-3 h-3 text-accent-yellow" />
-            </div>
-            <span className="text-xs font-black uppercase tracking-wider text-white/70">{league}</span>
-            <span className="ml-auto text-[10px] font-bold text-white/30">{events.length} matches</span>
+    <div className="rounded-xl overflow-hidden border border-[#2d3348] mb-3 animate-slide-up" style={{ background: "#1e2433" }}>
+        {/* League header */}
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-[#2d3348]" style={{ background: "#242938" }}>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex-1 truncate">{league}</span>
+            <span className="text-[10px] text-slate-600">{events.length}</span>
         </div>
-
-        {/* Match Rows */}
-        <div className="divide-y divide-white/5">
-            {events.map((event) => (
-                <MatchRow
-                    key={event.id}
-                    event={event}
-                    isInPlay={isInPlay}
-                    onSelect={() => onSelectGame(event.id)}
-                />
+        {/* Rows */}
+        <div className="divide-y divide-[#2d3348]">
+            {events.map((ev) => (
+                <MatchRow key={ev.id} event={ev} isLive={isLive} onSelect={() => onSelect(ev.id)} />
             ))}
         </div>
     </div>
 );
 
-// ─── Match Row ───────────────────────────────────────────────────────────────
-const MatchRow = ({
-    event, isInPlay, onSelect,
-}: {
-    event: MatchEvent;
-    isInPlay: boolean;
-    onSelect: () => void;
-}) => {
-    const score = event.ss ? event.ss.split("-") : null;
-    const homeScore = score?.[0]?.trim() ?? null;
-    const awayScore = score?.[1]?.trim() ?? null;
+// ── Match Row ─────────────────────────────────────────────────────────────────
+const MatchRow = ({ event, isLive, onSelect }: { event: MatchEvent; isLive: boolean; onSelect: () => void }) => {
+    const scores = event.ss ? event.ss.split("-").map(s => s.trim()) : [null, null];
+    const homeScore = scores[0];
+    const awayScore = scores[1];
+    const homeWin = homeScore !== null && awayScore !== null && Number(homeScore) > Number(awayScore);
+    const awayWin = homeScore !== null && awayScore !== null && Number(awayScore) > Number(homeScore);
 
-    const scheduledDate = event.scheduled_time
+    const scheduledTime = event.scheduled_time
         ? new Date(event.scheduled_time * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
         : null;
 
     return (
         <div
             onClick={onSelect}
-            className="group flex items-center gap-3 px-4 py-3.5 bg-[#0D1117] hover:bg-white/5 cursor-pointer transition-all"
+            className="group flex items-center gap-3 px-3 py-3 hover:bg-[#242938] cursor-pointer transition-colors"
         >
-            {/* Left: Status */}
-            <div className="w-14 flex-shrink-0 text-center">
-                {isInPlay ? (
-                    <div className="flex flex-col items-center gap-0.5">
-                        <span className="text-[9px] font-black text-red-500 uppercase animate-pulse">LIVE</span>
-                        <span className="text-xs font-black text-white/60">{event.timer ?? "0"}&apos;</span>
+            {/* Timer / Status */}
+            <div className="w-11 flex-shrink-0 text-center">
+                {isLive ? (
+                    <div>
+                        <span className="live-dot mx-auto block mb-0.5" />
+                        <span className="text-[10px] font-bold text-slate-500">{event.timer ?? "0"}&apos;</span>
                     </div>
                 ) : (
-                    <span className="text-xs font-bold text-white/40">{scheduledDate ?? "--:--"}</span>
+                    <span className="text-[11px] font-medium text-slate-500">{scheduledTime ?? "--:--"}</span>
                 )}
             </div>
 
-            {/* Middle: Teams */}
-            <div className="flex-1 min-w-0">
-                {/* Home */}
-                <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-bold text-white truncate max-w-[160px] sm:max-w-none">
+            {/* Teams */}
+            <div className="flex-1 min-w-0 space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                    <span className={cn("text-sm font-semibold truncate", homeWin ? "text-white" : "text-slate-300")}>
                         {event.home}
                     </span>
                     {homeScore !== null && (
-                        <span className={cn(
-                            "text-base font-black ml-2 flex-shrink-0",
-                            Number(homeScore) > Number(awayScore) ? "text-accent-yellow" : "text-white"
-                        )}>
+                        <span className={cn("text-sm font-black ml-1 flex-shrink-0", homeWin ? "text-green-400" : "text-slate-400")}>
                             {homeScore}
                         </span>
                     )}
                 </div>
-                {/* Away */}
-                <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-white/60 truncate max-w-[160px] sm:max-w-none">
+                <div className="flex items-center justify-between gap-2">
+                    <span className={cn("text-sm font-semibold truncate", awayWin ? "text-white" : "text-slate-500")}>
                         {event.away}
                     </span>
                     {awayScore !== null && (
-                        <span className={cn(
-                            "text-base font-black ml-2 flex-shrink-0",
-                            Number(awayScore) > Number(homeScore) ? "text-accent-yellow" : "text-white/60"
-                        )}>
+                        <span className={cn("text-sm font-black ml-1 flex-shrink-0", awayWin ? "text-green-400" : "text-slate-500")}>
                             {awayScore}
                         </span>
                     )}
                 </div>
             </div>
 
-            {/* Right: Odds */}
-            <div className="flex gap-1.5 flex-shrink-0">
+            {/* Odds */}
+            <div className="flex gap-1 flex-shrink-0">
                 {event.odds && event.odds.length > 0 ? (
-                    event.odds.slice(0, 3).map((odd, idx) => (
-                        <OddButton
-                            key={idx}
-                            label={odd.name || (idx === 0 ? "1" : idx === 1 ? "X" : "2")}
-                            value={odd.value}
-                        />
+                    event.odds.slice(0, 3).map((odd, i) => (
+                        <OddBtn key={i} label={odd.name || (i === 0 ? "1" : i === 1 ? "X" : "2")} value={odd.value} />
                     ))
                 ) : (
-                    // Placeholder shown for upcoming matches with no odds yet
-                    ["1", "X", "2"].map((label) => (
-                        <OddButton key={label} label={label} value="--" disabled />
-                    ))
+                    ["1", "X", "2"].map(l => <OddBtn key={l} label={l} value="—" disabled />)
                 )}
             </div>
 
-            {/* Arrow */}
-            <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-accent-yellow transition-colors flex-shrink-0" />
+            <ChevronRight className="w-3.5 h-3.5 text-slate-700 group-hover:text-slate-400 flex-shrink-0 transition-colors" />
         </div>
     );
 };
 
-// ─── Odd Button ──────────────────────────────────────────────────────────────
-const OddButton = ({ label, value, disabled }: { label: string; value: string; disabled?: boolean }) => (
+// ── Odd Button ────────────────────────────────────────────────────────────────
+const OddBtn = ({ label, value, disabled }: { label: string; value: string; disabled?: boolean }) => (
     <div className={cn(
-        "flex flex-col items-center justify-center w-14 py-2 rounded-lg border text-center transition-all",
+        "flex flex-col items-center justify-center w-12 py-1.5 rounded-lg border text-center transition-all select-none",
         disabled
-            ? "border-white/5 bg-white/[0.02] cursor-default"
-            : "border-white/10 bg-white/5 hover:bg-accent-yellow hover:border-accent-yellow hover:text-primary-dark cursor-pointer active:scale-95 group/odd"
+            ? "bg-[#161b28] border-[#2d3348] cursor-default"
+            : "bg-[#161b28] border-[#2d3348] hover:border-green-500 hover:bg-green-600/10 cursor-pointer active:scale-95 group/odd"
     )}>
-        <span className={cn(
-            "text-[9px] font-black uppercase",
-            disabled ? "text-white/20" : "text-white/40 group-hover/odd:text-primary-dark"
-        )}>
+        <span className={cn("text-[8px] font-bold uppercase", disabled ? "text-slate-700" : "text-slate-500 group-hover/odd:text-green-400")}>
             {label}
         </span>
-        <span className={cn(
-            "text-xs font-black",
-            disabled ? "text-white/20" : "text-accent-yellow group-hover/odd:text-primary-dark"
-        )}>
+        <span className={cn("text-xs font-black", disabled ? "text-slate-700" : "text-green-400")}>
             {value}
         </span>
     </div>

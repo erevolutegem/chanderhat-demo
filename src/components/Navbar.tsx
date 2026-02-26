@@ -1,192 +1,167 @@
+"use client";
+
 import React, { useState } from "react";
-import { Search, Menu, X, Clock, User, Lock } from "lucide-react";
+import { Search, Menu, X, Bell, ChevronDown, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useBackendStatus } from "@/hooks/useBackendStatus";
 import { useSite } from "@/lib/SiteContext";
 import AuthModals from "./AuthModals";
+import { useBackendStatus } from "@/hooks/useBackendStatus";
+
+const SPORTS_LINKS = [
+    { label: "In-Play", hot: true },
+    { label: "Cricket" },
+    { label: "Soccer" },
+    { label: "Tennis" },
+    { label: "Basketball" },
+    { label: "Exchange" },
+    { label: "Casino" },
+    { label: "Slots" },
+];
 
 const Navbar = () => {
     const { site } = useSite();
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [authModal, setAuthModal] = useState<{ isOpen: boolean; type: "login" | "signup" }>({ isOpen: false, type: "login" });
     const backendStatus = useBackendStatus();
 
-    const openAuth = (type: "login" | "signup") => setAuthModal({ isOpen: true, type });
-
-    // Initial branding logic
-    const displayName = site?.name || "PLAYBAJI";
-    const logoInitial = displayName.charAt(0);
-    const part1 = displayName.substring(0, 4);
-    const part2 = displayName.substring(4);
+    const displayName = site?.name || "CHANDERHAT";
 
     return (
-        <nav className="w-full bg-primary-dark text-white shadow-lg sticky top-0 z-50">
-            {/* Top Header */}
-            <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                    {/* Mobile Menu Button */}
+        <>
+            {/* ── Top Bar ─────────────────────────────────────────── */}
+            <nav className="w-full sticky top-0 z-50 border-b border-[#2d3348]" style={{ background: "#1a1f2e" }}>
+                <div className="max-w-7xl mx-auto px-3 md:px-6 h-14 flex items-center gap-3">
+
+                    {/* Mobile hamburger */}
                     <button
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
+                        onClick={() => setIsMobileOpen(true)}
+                        className="lg:hidden p-2 text-slate-400 hover:text-white transition-colors"
                     >
-                        {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        <Menu className="w-5 h-5" />
                     </button>
 
                     {/* Logo */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className="w-10 h-10 bg-accent-yellow rounded-full flex items-center justify-center overflow-hidden">
-                            {site?.logoUrl ? (
-                                <img src={site.logoUrl} alt={displayName} className="w-full h-full object-cover" />
-                            ) : (
-                                <span className="text-primary-dark font-bold text-xl italic">{logoInitial}</span>
-                            )}
+                    <a href="/" className="flex items-center gap-2 flex-shrink-0">
+                        <div className="w-8 h-8 rounded-lg bg-green-600 flex items-center justify-center">
+                            <span className="text-white font-black text-sm">C</span>
                         </div>
-                        <span className="text-xl md:text-2xl font-black italic tracking-tighter text-white uppercase">
-                            {part1}<span className="text-accent-yellow">{part2}</span>
+                        <span className="text-white font-black text-lg tracking-tight hidden sm:block">
+                            Chander<span className="text-green-400">Hat</span>
+                        </span>
+                    </a>
+
+                    {/* Search */}
+                    <div className="hidden md:flex flex-1 max-w-xs items-center gap-2 bg-[#242938] border border-[#353c52] rounded-lg px-3 h-9">
+                        <Search className="w-4 h-4 text-slate-500" />
+                        <input
+                            type="text"
+                            placeholder="Search matches..."
+                            className="bg-transparent text-sm text-white placeholder:text-slate-500 outline-none flex-1"
+                        />
+                    </div>
+
+                    {/* Spacer */}
+                    <div className="flex-1" />
+
+                    {/* API Status dot */}
+                    <div className="hidden sm:flex items-center gap-1.5">
+                        <div className={cn(
+                            "w-2 h-2 rounded-full",
+                            backendStatus === "online" ? "bg-green-400" : "bg-red-400"
+                        )} />
+                        <span className="text-[11px] text-slate-500 font-medium">
+                            {backendStatus === "online" ? "Live" : "Offline"}
                         </span>
                     </div>
-                </div>
 
-                {/* Search - Hidden on Small Mobile */}
-                <div className="hidden sm:flex flex-1 max-w-sm items-center bg-white/10 rounded-full px-4 h-10 border border-white/20">
-                    <Search className="w-4 h-4 text-white/60" />
-                    <input
-                        type="text"
-                        placeholder="Search Event"
-                        className="bg-transparent border-none outline-none px-3 text-sm flex-1 placeholder:text-white/40"
-                    />
-                </div>
-
-                {/* Auth & API Status Section */}
-                <div className="flex items-center gap-2">
-                    {/* Backend Status Indicator */}
-                    <div className="hidden sm:flex items-center gap-2 mr-4 px-3 py-1 bg-white/5 rounded-full border border-white/10">
-                        <div className={cn(
-                            "w-2 h-2 rounded-full animate-pulse",
-                            backendStatus === 'online' ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" :
-                                backendStatus === 'offline' ? "bg-red-400" : "bg-white/20"
-                        )} />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">API Status</span>
+                    {/* Auth buttons */}
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setAuthModal({ isOpen: true, type: "login" })}
+                            className="px-4 py-1.5 text-sm font-semibold text-white border border-[#353c52] rounded-lg hover:border-green-500/50 hover:text-green-400 transition-all"
+                        >
+                            Login
+                        </button>
+                        <button
+                            onClick={() => setAuthModal({ isOpen: true, type: "signup" })}
+                            className="px-4 py-1.5 text-sm font-bold text-white bg-green-600 hover:bg-green-500 rounded-lg transition-all"
+                        >
+                            Join Now
+                        </button>
                     </div>
+                </div>
 
-                    <div className="hidden lg:flex gap-2">
-                        <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
-                            <input type="text" placeholder="Username" className="bg-white/10 rounded px-9 py-1.5 text-sm w-32 outline-none border border-white/10 focus:border-accent-yellow" />
+                {/* ── Desktop Sports Nav ────────────────────────────── */}
+                <div className="hidden lg:block border-t border-[#2d3348]" style={{ background: "#161b28" }}>
+                    <div className="max-w-7xl mx-auto px-6 flex items-center h-10 gap-1">
+                        {SPORTS_LINKS.map((link) => (
+                            <a
+                                key={link.label}
+                                href="#"
+                                className="flex items-center gap-1.5 px-3 h-full text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5 rounded transition-all whitespace-nowrap"
+                            >
+                                {link.hot && <span className="live-dot" />}
+                                {link.label}
+                            </a>
+                        ))}
+                    </div>
+                </div>
+            </nav>
+
+            {/* ── Mobile Drawer ─────────────────────────────────────── */}
+            {isMobileOpen && (
+                <div className="fixed inset-0 z-[100] lg:hidden">
+                    <div className="absolute inset-0 bg-black/60" onClick={() => setIsMobileOpen(false)} />
+                    <div className="absolute top-0 left-0 bottom-0 w-72 bg-[#1a1f2e] border-r border-[#2d3348] flex flex-col shadow-2xl animate-slide-up">
+                        <div className="flex items-center justify-between px-4 h-14 border-b border-[#2d3348]">
+                            <span className="text-white font-black text-lg">
+                                Chander<span className="text-green-400">Hat</span>
+                            </span>
+                            <button onClick={() => setIsMobileOpen(false)} className="text-slate-400 hover:text-white">
+                                <X className="w-5 h-5" />
+                            </button>
                         </div>
-                        <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
-                            <input type="password" placeholder="Password" className="bg-white/10 rounded px-9 py-1.5 text-sm w-32 outline-none border border-white/10 focus:border-accent-yellow" />
+
+                        <div className="flex-1 overflow-y-auto p-4 space-y-1">
+                            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-2 mb-3">Sports</p>
+                            {SPORTS_LINKS.map((link) => (
+                                <a
+                                    key={link.label}
+                                    href="#"
+                                    onClick={() => setIsMobileOpen(false)}
+                                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-300 hover:bg-[#242938] hover:text-white transition-all"
+                                >
+                                    {link.hot && <span className="live-dot" />}
+                                    {link.label}
+                                </a>
+                            ))}
+                        </div>
+
+                        <div className="p-4 border-t border-[#2d3348] space-y-2">
+                            <button
+                                onClick={() => { setAuthModal({ isOpen: true, type: "login" }); setIsMobileOpen(false); }}
+                                className="w-full py-2.5 border border-[#353c52] rounded-lg text-sm font-semibold text-white hover:border-green-500/50 transition-all"
+                            >
+                                Login
+                            </button>
+                            <button
+                                onClick={() => { setAuthModal({ isOpen: true, type: "signup" }); setIsMobileOpen(false); }}
+                                className="w-full py-2.5 bg-green-600 hover:bg-green-500 rounded-lg text-sm font-bold text-white transition-all"
+                            >
+                                Create Account
+                            </button>
                         </div>
                     </div>
-                    {/* Mobile Auth Button */}
-                    <button
-                        onClick={() => openAuth('login')}
-                        className="bg-accent-red hover:bg-red-700 text-white font-bold px-4 md:px-6 py-1.5 rounded transition-colors text-sm uppercase whitespace-nowrap"
-                    >
-                        Login
-                    </button>
                 </div>
-            </div>
+            )}
 
-            {/* Auth Modals Container */}
             <AuthModals
                 isOpen={authModal.isOpen}
                 onClose={() => setAuthModal({ ...authModal, isOpen: false })}
                 type={authModal.type}
             />
-
-            {/* Desktop Main Nav Links - Hidden on Mobile */}
-            <div className="hidden lg:block bg-secondary-dark border-y border-white/5">
-                <div className="max-w-7xl mx-auto px-4 h-12 flex items-center justify-between text-sm font-medium">
-                    <div className="flex items-center h-full gap-6">
-                        <NavLink href="#" active>Home</NavLink>
-                        <NavLink href="#">In-Play</NavLink>
-                        <NavLink href="#">Cricket</NavLink>
-                        <NavLink href="#">Soccer</NavLink>
-                        <NavLink href="#">Tennis</NavLink>
-                        <NavLink href="#">Exchange</NavLink>
-                        <NavLink href="#">Casino</NavLink>
-                    </div>
-
-                    <div className="flex items-center gap-4 text-white/60">
-                        <div className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            <span>GMT+6</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Mobile Sidebar Overlay */}
-            <div className={cn(
-                "fixed inset-0 bg-black/60 z-40 lg:hidden transition-opacity duration-300",
-                isMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
-            )} onClick={() => setIsMenuOpen(false)} />
-
-            {/* Mobile Sidebar Content */}
-            <div className={cn(
-                "fixed top-0 left-0 bottom-0 w-[280px] bg-primary-dark z-50 lg:hidden transition-transform duration-300 shadow-2xl",
-                isMenuOpen ? "translate-x-0" : "-translate-x-full"
-            )}>
-                <div className="p-6 h-full flex flex-col gap-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-accent-yellow rounded-full flex items-center justify-center">
-                                <span className="text-primary-dark font-bold text-sm italic">PB</span>
-                            </div>
-                            <span className="text-xl font-black italic tracking-tighter text-white">PLAY<span className="text-accent-yellow">BAJI</span></span>
-                        </div>
-                        <button onClick={() => setIsMenuOpen(false)}><X className="w-6 h-6" /></button>
-                    </div>
-
-                    <div className="flex flex-col gap-1 overflow-y-auto">
-                        <MobileNavLink href="#" active>Home</MobileNavLink>
-                        <MobileNavLink href="#">In-Play</MobileNavLink>
-                        <MobileNavLink href="#">Cricket</MobileNavLink>
-                        <MobileNavLink href="#">Soccer</MobileNavLink>
-                        <MobileNavLink href="#">Tennis</MobileNavLink>
-                        <MobileNavLink href="#">Exchange</MobileNavLink>
-                        <MobileNavLink href="#">Casino</MobileNavLink>
-                    </div>
-
-                    <div className="mt-auto border-t border-white/10 pt-6 space-y-4">
-                        <div className="flex items-center gap-2 text-white/60 text-sm">
-                            <Clock className="w-4 h-4" />
-                            <span>System Time: GMT+6</span>
-                        </div>
-                        <button className="w-full bg-white/10 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 uppercase tracking-wider text-sm">
-                            Join Now
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </nav>
+        </>
     );
 };
-
-const NavLink = ({ href, children, active }: { href: string; children: React.ReactNode; active?: boolean }) => (
-    <a
-        href={href}
-        className={cn(
-            "h-full flex items-center px-1 border-b-2 transition-all hover:text-accent-yellow",
-            active ? "border-accent-yellow text-accent-yellow" : "border-transparent text-white/80"
-        )}
-    >
-        {children}
-    </a>
-);
-
-const MobileNavLink = ({ href, children, active }: { href: string; children: React.ReactNode; active?: boolean }) => (
-    <a
-        href={href}
-        className={cn(
-            "p-3 rounded-lg text-lg font-bold transition-all",
-            active ? "bg-accent-yellow text-primary-dark" : "text-white/80 hover:bg-white/5"
-        )}
-    >
-        {children}
-    </a>
-);
 
 export default Navbar;

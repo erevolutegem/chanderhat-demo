@@ -1,66 +1,102 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Gift } from "lucide-react";
 
-const banners = [
-    { id: 1, color: "bg-gradient-to-r from-indigo-900 to-accent-blue", title: "IPL 2024 SPECIAL", desc: "Get 100% Welcome Bonus on Cricket!" },
-    { id: 2, color: "bg-gradient-to-r from-accent-red to-orange-600", title: "CASINO ROYALE", desc: "Live Dealer Games with High Stakes" },
-    { id: 3, color: "bg-gradient-to-r from-emerald-800 to-teal-600", title: "SLOT MANIA", desc: "Spin to Win Jumbo Jackpots Every Day" },
+const BANNERS = [
+    {
+        id: 1,
+        bg: "linear-gradient(135deg, #1e3a2f 0%, #0f2d20 100%)",
+        accent: "#22c55e",
+        tag: "🎁 Welcome Offer",
+        title: "100% Deposit Bonus",
+        desc: "Get up to ৳5,000 on your first deposit. Play cricket, soccer & more.",
+        cta: "Claim Bonus",
+    },
+    {
+        id: 2,
+        bg: "linear-gradient(135deg, #1e2a3a 0%, #0f1d2d 100%)",
+        accent: "#3b82f6",
+        tag: "🏏 Cricket Special",
+        title: "Live IPL Betting",
+        desc: "Best odds on every IPL match. In-play & early markets available.",
+        cta: "Bet Now",
+    },
+    {
+        id: 3,
+        bg: "linear-gradient(135deg, #2d1e3a 0%, #1d0f2d 100%)",
+        accent: "#a855f7",
+        tag: "🎰 Casino",
+        title: "Live Casino Tables",
+        desc: "Play with real dealers 24/7. Blackjack, Roulette, Baccarat & more.",
+        cta: "Play Live",
+    },
 ];
 
 const HeroCarousel = () => {
     const [current, setCurrent] = useState(0);
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrent((prev) => (prev + 1) % banners.length);
-        }, 5000);
-        return () => clearInterval(timer);
+        const t = setInterval(() => setCurrent((p) => (p + 1) % BANNERS.length), 5500);
+        return () => clearInterval(t);
     }, []);
 
+    const prev = () => setCurrent((p) => (p - 1 + BANNERS.length) % BANNERS.length);
+    const next = () => setCurrent((p) => (p + 1) % BANNERS.length);
+
     return (
-        <div className="relative w-full h-[300px] md:h-[450px] overflow-hidden group">
-            {banners.map((banner, index) => (
+        <div className="relative w-full overflow-hidden" style={{ height: "220px" }}>
+            {BANNERS.map((b, i) => (
                 <div
-                    key={banner.id}
-                    className={`absolute inset-0 transition-opacity duration-1000 flex items-center px-6 md:px-24 ${index === current ? "opacity-100" : "opacity-0"}`}
+                    key={b.id}
+                    className="absolute inset-0 transition-opacity duration-700 px-6 md:px-12 flex items-center"
+                    style={{
+                        background: b.bg,
+                        opacity: i === current ? 1 : 0,
+                        pointerEvents: i === current ? "auto" : "none",
+                    }}
                 >
-                    <div className={`absolute inset-0 ${banner.color} opacity-90`} />
-                    <div className="relative z-10 max-w-2xl space-y-4">
-                        <h2 className="text-3xl sm:text-4xl md:text-6xl font-black italic text-white tracking-tight leading-tight">
-                            {banner.title}
+                    {/* Subtle grid overlay */}
+                    <div className="absolute inset-0 opacity-5" style={{
+                        backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 24px, rgba(255,255,255,.3) 24px, rgba(255,255,255,.3) 25px), repeating-linear-gradient(90deg, transparent, transparent 24px, rgba(255,255,255,.3) 24px, rgba(255,255,255,.3) 25px)"
+                    }} />
+
+                    <div className="relative z-10 max-w-lg space-y-3">
+                        <span className="inline-block text-xs font-bold px-3 py-1 rounded-full" style={{ background: b.accent + "22", color: b.accent }}>
+                            {b.tag}
+                        </span>
+                        <h2 className="text-2xl md:text-4xl font-black text-white leading-tight">
+                            {b.title}
                         </h2>
-                        <p className="text-base md:text-xl text-white/80 font-medium max-w-xs md:max-w-none">
-                            {banner.desc}
+                        <p className="text-sm text-slate-300 max-w-sm leading-relaxed">
+                            {b.desc}
                         </p>
-                        <button className="bg-accent-yellow hover:bg-yellow-500 text-primary-dark font-black px-6 md:px-8 py-2 md:py-3 rounded-full transition-all hover:scale-105 shadow-xl text-xs md:text-sm uppercase">
-                            Join Now
+                        <button
+                            className="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold text-white transition-all hover:scale-105 active:scale-95"
+                            style={{ background: b.accent }}
+                        >
+                            {b.cta}
                         </button>
                     </div>
                 </div>
             ))}
 
             {/* Controls */}
-            <button
-                onClick={() => setCurrent((prev) => (prev - 1 + banners.length) % banners.length)}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-                <ChevronLeft className="w-6 h-6" />
+            <button onClick={prev} className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center transition-all">
+                <ChevronLeft className="w-4 h-4" />
             </button>
-            <button
-                onClick={() => setCurrent((prev) => (prev + 1) % banners.length)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-                <ChevronRight className="w-6 h-6" />
+            <button onClick={next} className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 hover:bg-black/50 text-white flex items-center justify-center transition-all">
+                <ChevronRight className="w-4 h-4" />
             </button>
 
             {/* Dots */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-                {banners.map((_, i) => (
-                    <div
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {BANNERS.map((_, i) => (
+                    <button
                         key={i}
-                        className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-accent-yellow w-6" : "bg-white/30"}`}
+                        onClick={() => setCurrent(i)}
+                        className="h-1.5 rounded-full transition-all"
+                        style={{ width: i === current ? "24px" : "6px", background: i === current ? "#22c55e" : "rgba(255,255,255,0.3)" }}
                     />
                 ))}
             </div>

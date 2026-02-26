@@ -1,90 +1,84 @@
 "use client";
 
 import React from "react";
-import {
-    Trophy,
-    Monitor,
-    Zap,
-    Target,
-    Dribbble,
-    Sword,
-    Gamepad2,
-    BarChart3
-} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Zap, Trophy, Target, Dribbble, Monitor, BarChart2, Star, Shield } from "lucide-react";
 
 interface SideNavProps {
-    onSelectSport: (id: number | undefined) => void;
     selectedSport: number | undefined;
+    onSelectSport: (id: number | undefined) => void;
 }
 
-const SideNav = ({ onSelectSport, selectedSport }: SideNavProps) => {
-    const categories = [
-        { icon: <Zap className="w-4 h-4" />, label: "Soccer", id: 1 },
-        { icon: <Trophy className="w-4 h-4" />, label: "Cricket", id: 3 },
-        { icon: <Target className="w-4 h-4" />, label: "Tennis", id: 13 },
-        { icon: <Dribbble className="w-4 h-4" />, label: "Basketball", id: 18 },
-        { icon: <Zap className="w-4 h-4" />, label: "American Football", id: 12 },
-    ];
+const SPORTS = [
+    { id: undefined, label: "All Sports", icon: Monitor },
+    { id: 1, label: "Soccer", icon: Dribbble, color: "#3b82f6" },
+    { id: 3, label: "Cricket", icon: Target, color: "#22c55e" },
+    { id: 13, label: "Tennis", icon: Zap, color: "#f59e0b" },
+    { id: 18, label: "Basketball", icon: Trophy, color: "#f97316" },
+    { id: 12, label: "American Football", icon: Shield, color: "#8b5cf6" },
+];
 
-    return (
-        <aside className="hidden lg:flex flex-col w-64 h-[calc(100vh-112px)] sticky top-[112px] bg-secondary-dark/50 border-r border-white/5 overflow-y-auto custom-scrollbar">
-            <div className="p-4 flex flex-col gap-2">
-                <h5 className="text-[10px] font-black uppercase tracking-widest text-white/30 px-2 mb-2">Sports Categories</h5>
+const TOOLS = [
+    { label: "Statistics", icon: BarChart2 },
+    { label: "Favourites", icon: Star },
+];
 
-                <button
-                    onClick={() => onSelectSport(undefined)}
-                    className={cn(
-                        "flex items-center justify-between px-3 py-2.5 rounded-lg transition-all group",
-                        selectedSport === undefined ? "bg-accent-yellow text-primary-dark shadow-lg shadow-accent-yellow/10" : "text-white/60 hover:bg-white/5 hover:text-white"
-                    )}
-                >
-                    <div className="flex items-center gap-3">
-                        <span className={cn(selectedSport === undefined ? "text-primary-dark" : "text-accent-yellow")}>
-                            <Monitor className="w-4 h-4" />
-                        </span>
-                        <span className="text-sm font-bold">All Sports</span>
-                    </div>
-                </button>
+const SideNav = ({ selectedSport, onSelectSport }: SideNavProps) => (
+    <aside className="hidden lg:flex flex-col w-56 flex-shrink-0 border-r border-[#2d3348] sticky top-[88px] h-[calc(100vh-88px)] overflow-y-auto scrollbar-hide" style={{ background: "#161b28" }}>
 
-                {categories.map((cat) => (
-                    <SideItem
-                        key={cat.id}
-                        icon={cat.icon}
-                        label={cat.label}
-                        active={selectedSport === cat.id}
-                        onClick={() => onSelectSport(cat.id)}
-                    />
-                ))}
-
-                <div className="my-6 border-t border-white/5" />
-
-                <h5 className="text-[10px] font-black uppercase tracking-widest text-white/30 px-2 mb-2">Analysis</h5>
-                <SideItem icon={<BarChart3 className="w-4 h-4" />} label="Statistics" onClick={() => { }} />
-                <SideItem icon={<Zap className="w-4 h-4 text-orange-400" />} label="Hot Events" onClick={() => { }} />
-            </div>
-        </aside>
-    );
-};
-
-const SideItem = ({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active?: boolean; onClick: () => void }) => (
-    <button
-        onClick={onClick}
-        className={cn(
-            "flex items-center justify-between px-3 py-2.5 rounded-lg transition-all group",
-            active ? "bg-accent-yellow text-primary-dark shadow-lg shadow-accent-yellow/10" : "text-white/60 hover:bg-white/5 hover:text-white"
-        )}
-    >
-        <div className="flex items-center gap-3">
-            <span className={cn(
-                "transition-colors",
-                active ? "text-primary-dark" : "text-accent-yellow group-hover:text-accent-yellow"
-            )}>
-                {icon}
-            </span>
-            <span className="text-sm font-bold">{label}</span>
+        {/* Sports */}
+        <div className="p-3">
+            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-2 mb-2">Live Sports</p>
+            {SPORTS.map((sport) => {
+                const isActive = selectedSport === sport.id;
+                const Icon = sport.icon;
+                return (
+                    <button
+                        key={String(sport.id)}
+                        onClick={() => onSelectSport(sport.id)}
+                        className={cn(
+                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all mb-0.5",
+                            isActive
+                                ? "bg-green-600/20 text-green-400 border border-green-600/30"
+                                : "text-slate-400 hover:bg-[#1e2433] hover:text-white"
+                        )}
+                    >
+                        <Icon
+                            className="w-4 h-4 flex-shrink-0"
+                            style={{ color: isActive ? "#22c55e" : (sport.color || "#64748b") }}
+                        />
+                        {sport.label}
+                    </button>
+                );
+            })}
         </div>
-    </button>
+
+        {/* Divider */}
+        <div className="mx-3 border-t border-[#2d3348] my-2" />
+
+        {/* Tools */}
+        <div className="p-3">
+            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-2 mb-2">Tools</p>
+            {TOOLS.map(({ label, icon: Icon }) => (
+                <button
+                    key={label}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-500 hover:bg-[#1e2433] hover:text-white transition-all mb-0.5"
+                >
+                    <Icon className="w-4 h-4" />
+                    {label}
+                </button>
+            ))}
+        </div>
+
+        {/* Promo Banner */}
+        <div className="m-3 mt-auto p-3 rounded-xl bg-gradient-to-br from-green-900/40 to-green-800/20 border border-green-700/30">
+            <p className="text-xs font-bold text-green-400">🎁 Get Bonus</p>
+            <p className="text-[11px] text-slate-400 mt-1">Deposit now & get 100% welcome bonus</p>
+            <button className="mt-2 w-full py-1.5 bg-green-600 hover:bg-green-500 text-white text-xs font-bold rounded-lg transition-all">
+                Claim Now
+            </button>
+        </div>
+    </aside>
 );
 
 export default SideNav;

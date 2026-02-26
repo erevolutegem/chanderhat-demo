@@ -20,11 +20,11 @@ interface SideNavProps {
 
 const SideNav = ({ onSelectSport, selectedSport }: SideNavProps) => {
     const categories = [
-        { icon: <Zap className="w-4 h-4" />, label: "Soccer", id: 1, count: 45 },
-        { icon: <Trophy className="w-4 h-4" />, label: "Cricket", id: 3, count: 8 },
-        { icon: <Target className="w-4 h-4" />, label: "Tennis", id: 13, count: 5 },
-        { icon: <Dribbble className="w-4 h-4" />, label: "Basketball", id: 18, count: 22 },
-        { icon: <Zap className="w-4 h-4" />, label: "American Football", id: 12, count: 3 },
+        { icon: <Zap className="w-4 h-4" />, label: "Soccer", id: 1 },
+        { icon: <Trophy className="w-4 h-4" />, label: "Cricket", id: 3 },
+        { icon: <Target className="w-4 h-4" />, label: "Tennis", id: 13 },
+        { icon: <Dribbble className="w-4 h-4" />, label: "Basketball", id: 18 },
+        { icon: <Zap className="w-4 h-4" />, label: "American Football", id: 12 },
     ];
 
     return (
@@ -52,7 +52,6 @@ const SideNav = ({ onSelectSport, selectedSport }: SideNavProps) => {
                         key={cat.id}
                         icon={cat.icon}
                         label={cat.label}
-                        count={cat.count}
                         active={selectedSport === cat.id}
                         onClick={() => onSelectSport(cat.id)}
                     />
@@ -68,7 +67,7 @@ const SideNav = ({ onSelectSport, selectedSport }: SideNavProps) => {
     );
 };
 
-const SideItem = ({ icon, label, count, active, onClick }: { icon: React.ReactNode; label: string; count?: number; active?: boolean; onClick: () => void }) => (
+const SideItem = ({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active?: boolean; onClick: () => void }) => (
     <button
         onClick={onClick}
         className={cn(
@@ -85,14 +84,6 @@ const SideItem = ({ icon, label, count, active, onClick }: { icon: React.ReactNo
             </span>
             <span className="text-sm font-bold">{label}</span>
         </div>
-        {count !== undefined && (
-            <span className={cn(
-                "text-[10px] font-black px-1.5 py-0.5 rounded",
-                active ? "bg-black/20 text-primary-dark" : "bg-white/10 text-white/40 group-hover:bg-white/20 group-hover:text-white"
-            )}>
-                {count}
-            </span>
-        )}
     </button>
 );
 

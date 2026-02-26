@@ -105,19 +105,41 @@ const GameDetailModal = ({ gameId, onClose }: GameDetailModalProps) => {
                                 </div>
                             </div>
 
-                            {/* Markets Toggle Placeholder */}
-                            <div>
-                                <h5 className="text-[10px] font-black uppercase text-white/30 tracking-widest mb-4">Popular Markets</h5>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-white/5 p-4 rounded-xl border border-white/5 flex items-center justify-between">
-                                        <span className="text-xs font-bold text-white/60">Over 2.5 Goals</span>
-                                        <span className="text-xs font-black text-accent-yellow">1.85</span>
+                            {/* Dynamic Markets from API */}
+                            <div className="space-y-6">
+                                {details && Array.isArray(details) ? (
+                                    (() => {
+                                        const markets: any[] = [];
+                                        let currentMA: any = null;
+
+                                        details.forEach((item: any) => {
+                                            if (item.type === 'MA') {
+                                                currentMA = { name: item.NA, odds: [] };
+                                                markets.push(currentMA);
+                                            } else if (item.type === 'PA' && currentMA) {
+                                                currentMA.odds.push({ label: item.NA, value: item.OD });
+                                            }
+                                        });
+
+                                        return markets.slice(0, 5).map((m, idx) => (
+                                            <div key={idx} className="space-y-3">
+                                                <h5 className="text-[10px] font-black uppercase text-white/30 tracking-widest">{m.name}</h5>
+                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                                    {m.odds.map((o: any, oIdx: number) => (
+                                                        <div key={oIdx} className="bg-white/5 p-3 rounded-xl border border-white/5 flex items-center justify-between hover:border-accent-yellow/30 transition-colors group cursor-pointer">
+                                                            <span className="text-[10px] font-bold text-white/60 group-hover:text-white">{o.label}</span>
+                                                            <span className="text-[10px] font-black text-accent-yellow">{o.value}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ));
+                                    })()
+                                ) : (
+                                    <div className="py-8 text-center border border-dashed border-white/10 rounded-2xl">
+                                        <p className="text-[10px] font-black uppercase text-white/20">Waiting for live markets...</p>
                                     </div>
-                                    <div className="bg-white/5 p-4 rounded-xl border border-white/5 flex items-center justify-between">
-                                        <span className="text-xs font-bold text-white/60">Both Teams to Score</span>
-                                        <span className="text-xs font-black text-accent-yellow">2.10</span>
-                                    </div>
-                                </div>
+                                )}
                             </div>
 
                             <button className="w-full py-4 bg-accent-yellow text-primary-dark font-black rounded-xl uppercase tracking-tighter hover:bg-yellow-400 active:scale-95 transition-all shadow-xl shadow-accent-yellow/10">

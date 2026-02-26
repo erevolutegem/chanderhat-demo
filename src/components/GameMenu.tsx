@@ -5,12 +5,12 @@ import { Trophy, Dribbble, Ghost, Target, Play, Flame, LayoutGrid } from "lucide
 import { cn } from "@/lib/utils";
 
 const categories = [
-    { name: "All", id: undefined, icon: Flame, color: "text-red-400", count: "LIVE" },
-    { name: "Soccer", id: 1, icon: Dribbble, color: "text-blue-400", count: "" },
-    { name: "Tennis", id: 13, icon: Target, color: "text-emerald-400", count: "" },
-    { name: "Basketball", id: 18, icon: Play, color: "text-orange-400", count: "" },
-    { name: "American Football", id: 12, icon: Trophy, color: "text-yellow-400", count: "" },
-    { name: "Cricket", id: 3, icon: Flame, color: "text-red-400", count: "" },
+    { name: "All", id: undefined, icon: Flame, color: "text-red-400" },
+    { name: "Soccer", id: 1, icon: Dribbble, color: "text-blue-400" },
+    { name: "Tennis", id: 13, icon: Target, color: "text-emerald-400" },
+    { name: "Basketball", id: 18, icon: Play, color: "text-orange-400" },
+    { name: "American Football", id: 12, icon: Trophy, color: "text-yellow-400" },
+    { name: "Cricket", id: 3, icon: Flame, color: "text-red-400" },
 ];
 
 interface GameMenuProps {
@@ -49,11 +49,6 @@ const GameMenu = ({ onSelectSport, selectedSport }: GameMenuProps) => {
                             )}>
                                 {cat.name}
                             </span>
-                            {cat.count && (
-                                <span className="text-[10px] font-black bg-red-600 text-white px-2 py-0.5 rounded-full scale-90 whitespace-nowrap">
-                                    {cat.count}
-                                </span>
-                            )}
                         </div>
                     </div>
                 ))}

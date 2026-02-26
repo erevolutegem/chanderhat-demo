@@ -32,7 +32,12 @@ const GameGrid = ({ sportId, onSelectGame }: GameGridProps) => {
 
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-black italic tracking-tight text-white/90">
-                        {sportId ? "LIVE" : "FEATURED"} <span className="text-accent-yellow">MATCHES</span>
+                        LIVE <span className="text-accent-yellow">MATCHES</span>
+                        {games.length > 0 && (
+                            <span className="ml-3 text-xs font-black bg-red-600 text-white px-2 py-0.5 rounded-full animate-pulse">
+                                {games.length} LIVE
+                            </span>
+                        )}
                     </h3>
                     <button className="text-accent-yellow text-sm font-bold border-b border-accent-yellow/0 hover:border-accent-yellow transition-all pb-1 uppercase">VIEW ALL</button>
                 </div>

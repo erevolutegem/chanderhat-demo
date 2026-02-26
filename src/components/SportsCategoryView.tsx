@@ -66,17 +66,12 @@ const SportsCategoryView = ({ sportId, onSelectGame }: SportsCategoryViewProps) 
 
         const load = async () => {
             try {
-                let url: string;
-                if (activeTab === "inplay") {
-                    url = sportId
-                        ? `${apiUrl}/games/live?sportId=${sportId}`
-                        : `${apiUrl}/games/live`;
-                } else {
-                    // Today or Tomorrow
-                    const params = new URLSearchParams({ date: activeTab });
-                    if (sportId) params.set("sportId", String(sportId));
-                    url = `${apiUrl}/games/upcoming?${params.toString()}`;
-                }
+                // ALL tabs use /games/live — inplay (default), today, tomorrow via ?tab= param
+                const params = new URLSearchParams();
+                if (activeTab !== "inplay") params.set("tab", activeTab);
+                if (sportId) params.set("sportId", String(sportId));
+                const qs = params.toString();
+                const url = `${apiUrl}/games/live${qs ? `?${qs}` : ""}`;
 
                 console.log("[SportsCategoryView] Fetching:", url);
                 const resp = await fetch(url, { cache: "no-store" });

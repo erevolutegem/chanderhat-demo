@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Loader2, Activity, Calendar, CalendarDays, ChevronRight, Lock } from "lucide-react";
+import { Loader2, Activity, Calendar, CalendarDays, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface MatchEvent {
@@ -20,254 +20,232 @@ export interface MatchEvent {
 
 type TabKey = "inplay" | "today" | "tomorrow";
 
-const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
-    { key: "inplay", label: "In Play", icon: <Activity className="w-3.5 h-3.5" /> },
-    { key: "today", label: "Today", icon: <Calendar className="w-3.5 h-3.5" /> },
-    { key: "tomorrow", label: "Tomorrow", icon: <CalendarDays className="w-3.5 h-3.5" /> },
+const TABS = [
+    { key: "inplay" as TabKey, label: "In Play", icon: Activity },
+    { key: "today" as TabKey, label: "Today", icon: Calendar },
+    { key: "tomorrow" as TabKey, label: "Tomorrow", icon: CalendarDays },
 ];
 
-const SPORT_LABELS: Record<string, string> = {
+const SPORT_NAMES: Record<string, string> = {
     "1": "Soccer", "3": "Cricket", "13": "Tennis",
     "18": "Basketball", "12": "American Football", "4": "Ice Hockey",
 };
 
-interface SportsCategoryViewProps {
+interface Props {
     sportId?: number;
     onSelectGame: (id: string) => void;
 }
 
-const SportsCategoryView = ({ sportId, onSelectGame }: SportsCategoryViewProps) => {
-    const [activeTab, setActiveTab] = useState<TabKey>("inplay");
+export default function SportsCategoryView({ sportId, onSelectGame }: Props) {
+    const [tab, setTab] = useState<TabKey>("inplay");
     const [matches, setMatches] = useState<MatchEvent[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-    useEffect(() => {
-        setActiveTab("inplay");
-    }, [sportId]);
+    // Reset tab when sport changes
+    useEffect(() => { setTab("inplay"); }, [sportId]);
 
+    // Fetch matches
     useEffect(() => {
-        let cancelled = false;
+        let dead = false;
         setLoading(true);
-        setError(null);
+        setErrorMsg(null);
         setMatches([]);
 
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dev.chanderhat.com";
+        const base = process.env.NEXT_PUBLIC_API_URL || "https://dev.chanderhat.com";
 
-        const load = async () => {
+        const go = async () => {
             try {
-                const params = new URLSearchParams();
-                if (activeTab !== "inplay") params.set("tab", activeTab);
-                if (sportId) params.set("sportId", String(sportId));
-                const qs = params.toString();
-                const url = `${apiUrl}/games/live${qs ? `?${qs}` : ""}`;
+                const p = new URLSearchParams();
+                if (tab !== "inplay") p.set("tab", tab);
+                if (sportId) p.set("sportId", String(sportId));
+                const url = `${base}/games/live${p.toString() ? `?${p}` : ""}`;
 
-                const resp = await fetch(url, { cache: "no-store" });
-                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const r = await fetch(url, { cache: "no-store" });
+                if (!r.ok) throw new Error(`Error ${r.status} fetching matches`);
 
-                const data = await resp.json();
-                if (cancelled) return;
-
-                if (Array.isArray(data?.results) && data.results.length > 0) {
-                    setMatches(data.results);
-                } else {
-                    setMatches([]);
-                    setError(data?.error || null);
-                }
-            } catch (err: any) {
-                if (!cancelled) { setError(err.message); setMatches([]); }
+                const d = await r.json();
+                if (dead) return;
+                setMatches(Array.isArray(d?.results) ? d.results : []);
+            } catch (e: any) {
+                if (!dead) setErrorMsg(e.message);
             } finally {
-                if (!cancelled) setLoading(false);
+                if (!dead) setLoading(false);
             }
         };
 
-        load();
-        const interval = activeTab === "inplay" ? setInterval(load, 30000) : undefined;
+        go();
+        const iv = tab === "inplay" ? setInterval(go, 30_000) : undefined;
+        return () => { dead = true; clearInterval(iv); };
+    }, [sportId, tab]);
 
-        return () => {
-            cancelled = true;
-            clearInterval(interval);
-        };
-    }, [sportId, activeTab]);
+    // Group by league
+    const byLeague: Record<string, MatchEvent[]> = {};
+    for (const m of matches) {
+        (byLeague[m.league || "Other"] ??= []).push(m);
+    }
 
-    // Group matches by league
-    const grouped = matches.reduce<Record<string, MatchEvent[]>>((acc, m) => {
-        const key = m.league || "Other";
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(m);
-        return acc;
-    }, {});
-
-    const sportLabel = sportId ? SPORT_LABELS[String(sportId)] || "Sport" : "All Sports";
+    const headline = sportId ? (SPORT_NAMES[sportId] || "Sport") : "All Sports";
 
     return (
-        <div className="flex-1 min-h-screen" style={{ background: "#0f1219" }}>
-            <div className="max-w-full">
-
-                {/* Header row */}
-                <div className="flex items-center justify-between px-4 pt-4 pb-3">
-                    <div className="flex items-center gap-2">
-                        <h2 className="text-base font-bold text-white">{sportLabel}</h2>
-                        {activeTab === "inplay" && matches.length > 0 && (
-                            <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-600/20 text-red-400 border border-red-600/20">
-                                <span className="live-dot" /> {matches.length} LIVE
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                {/* Tab switcher */}
-                <div className="flex items-center gap-1 px-4 mb-3">
-                    {TABS.map((tab) => (
-                        <button
-                            key={tab.key}
-                            onClick={() => setActiveTab(tab.key)}
-                            className={cn(
-                                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all",
-                                activeTab === tab.key
-                                    ? "bg-green-600 text-white"
-                                    : "bg-[#1e2433] text-slate-400 hover:text-white hover:bg-[#242938]"
-                            )}
-                        >
-                            {tab.icon}
-                            {tab.label}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Content */}
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-3">
-                        <Loader2 className="w-7 h-7 text-green-500 animate-spin" />
-                        <p className="text-sm text-slate-500">Loading matches...</p>
-                    </div>
-                ) : matches.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-3 mx-4 rounded-2xl border border-dashed border-[#2d3348]">
-                        <Activity className="w-8 h-8 text-slate-700" />
-                        <p className="text-sm font-semibold text-slate-500">No matches available</p>
-                        {error && <p className="text-xs text-slate-600 max-w-xs text-center">{error}</p>}
-                    </div>
-                ) : (
-                    <div className="space-y-px px-4 pb-8">
-                        {Object.entries(grouped).map(([league, events]) => (
-                            <LeagueBlock
-                                key={league}
-                                league={league}
-                                events={events}
-                                isLive={activeTab === "inplay"}
-                                onSelect={onSelectGame}
-                            />
-                        ))}
-                    </div>
+        <main className="max-w-screen-xl mx-auto px-3 md:px-6 py-5 pb-24 lg:pb-8">
+            {/* Title */}
+            <div className="flex items-center gap-3 mb-4">
+                <h1 className="text-lg font-bold text-white">{headline}</h1>
+                {tab === "inplay" && matches.length > 0 && (
+                    <span className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block" />
+                        {matches.length} Live
+                    </span>
                 )}
             </div>
-        </div>
-    );
-};
 
-// ── League Block ─────────────────────────────────────────────────────────────
-const LeagueBlock = ({ league, events, isLive, onSelect }: {
-    league: string; events: MatchEvent[]; isLive: boolean; onSelect: (id: string) => void;
-}) => (
-    <div className="rounded-xl overflow-hidden border border-[#2d3348] mb-3 animate-slide-up" style={{ background: "#1e2433" }}>
-        {/* League header */}
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-[#2d3348]" style={{ background: "#242938" }}>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex-1 truncate">{league}</span>
-            <span className="text-[10px] text-slate-600">{events.length}</span>
-        </div>
-        {/* Rows */}
-        <div className="divide-y divide-[#2d3348]">
-            {events.map((ev) => (
-                <MatchRow key={ev.id} event={ev} isLive={isLive} onSelect={() => onSelect(ev.id)} />
-            ))}
-        </div>
-    </div>
-);
+            {/* Tabs */}
+            <div className="flex gap-2 mb-5 border-b border-[#1e2433] pb-3">
+                {TABS.map(({ key, label, icon: Icon }) => (
+                    <button
+                        key={key}
+                        onClick={() => setTab(key)}
+                        className={cn(
+                            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all",
+                            tab === key
+                                ? "bg-green-600 text-white shadow-sm"
+                                : "text-slate-400 hover:text-white hover:bg-[#1e2433]"
+                        )}
+                    >
+                        <Icon className="w-4 h-4" />
+                        {label}
+                    </button>
+                ))}
+            </div>
+
+            {/* States */}
+            {loading && (
+                <div className="flex items-center justify-center py-24 gap-3 text-slate-500">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <span className="text-sm">Loading matches...</span>
+                </div>
+            )}
+
+            {!loading && matches.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-24 gap-3">
+                    <Activity className="w-10 h-10 text-slate-800" />
+                    <p className="text-slate-500 font-semibold text-sm">No matches right now</p>
+                    {errorMsg && <p className="text-slate-700 text-xs text-center max-w-sm">{errorMsg}</p>}
+                </div>
+            )}
+
+            {/* Match list */}
+            {!loading && matches.length > 0 && (
+                <div className="space-y-4">
+                    {Object.entries(byLeague).map(([league, evs]) => (
+                        <section key={league}>
+                            {/* League header */}
+                            <div className="flex items-center gap-2 px-3 py-2 rounded-t-xl border-b border-[#1e2433]" style={{ background: "#1a2030" }}>
+                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wide flex-1 truncate">{league}</span>
+                                <span className="text-xs text-slate-600">{evs.length} matches</span>
+                            </div>
+
+                            {/* Rows */}
+                            <div className="rounded-b-xl overflow-hidden border border-[#1e2433] border-t-0 divide-y divide-[#1e2433]" style={{ background: "#161d2a" }}>
+                                {evs.map(ev => (
+                                    <MatchRow
+                                        key={ev.id}
+                                        ev={ev}
+                                        live={tab === "inplay"}
+                                        onClick={() => onSelectGame(ev.id)}
+                                    />
+                                ))}
+                            </div>
+                        </section>
+                    ))}
+                </div>
+            )}
+        </main>
+    );
+}
 
 // ── Match Row ─────────────────────────────────────────────────────────────────
-const MatchRow = ({ event, isLive, onSelect }: { event: MatchEvent; isLive: boolean; onSelect: () => void }) => {
-    const scores = event.ss ? event.ss.split("-").map(s => s.trim()) : [null, null];
-    const homeScore = scores[0];
-    const awayScore = scores[1];
-    const homeWin = homeScore !== null && awayScore !== null && Number(homeScore) > Number(awayScore);
-    const awayWin = homeScore !== null && awayScore !== null && Number(awayScore) > Number(homeScore);
+function MatchRow({ ev, live, onClick }: { ev: MatchEvent; live: boolean; onClick: () => void }) {
+    const parts = ev.ss ? ev.ss.split("-").map(s => s.trim()) : [];
+    const hs = parts[0] ?? null;
+    const as_ = parts[1] ?? null;
+    const hWin = hs !== null && as_ !== null && +hs > +as_;
+    const aWin = hs !== null && as_ !== null && +as_ > +hs;
 
-    const scheduledTime = event.scheduled_time
-        ? new Date(event.scheduled_time * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    const time = ev.scheduled_time
+        ? new Date(ev.scheduled_time * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
         : null;
 
     return (
         <div
-            onClick={onSelect}
-            className="group flex items-center gap-3 px-3 py-3 hover:bg-[#242938] cursor-pointer transition-colors"
+            onClick={onClick}
+            className="group flex items-center gap-2 md:gap-4 px-3 py-3 hover:bg-white/[0.03] cursor-pointer transition-colors"
         >
-            {/* Timer / Status */}
-            <div className="w-11 flex-shrink-0 text-center">
-                {isLive ? (
-                    <div>
-                        <span className="live-dot mx-auto block mb-0.5" />
-                        <span className="text-[10px] font-bold text-slate-500">{event.timer ?? "0"}&apos;</span>
-                    </div>
+            {/* Status */}
+            <div className="w-12 flex-shrink-0 flex flex-col items-center">
+                {live ? (
+                    <>
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse mb-1" />
+                        <span className="text-[10px] font-bold text-slate-500">{ev.timer ?? "0"}&apos;</span>
+                    </>
                 ) : (
-                    <span className="text-[11px] font-medium text-slate-500">{scheduledTime ?? "--:--"}</span>
+                    <span className="text-[11px] text-slate-500">{time ?? "--:--"}</span>
                 )}
             </div>
 
-            {/* Teams */}
-            <div className="flex-1 min-w-0 space-y-1.5">
-                <div className="flex items-center justify-between gap-2">
-                    <span className={cn("text-sm font-semibold truncate", homeWin ? "text-white" : "text-slate-300")}>
-                        {event.home}
+            {/* Teams + Scores */}
+            <div className="flex-1 min-w-0">
+                {/* Home */}
+                <div className="flex items-center justify-between mb-1.5">
+                    <span className={cn("text-sm font-semibold truncate", hWin ? "text-white" : "text-slate-300")}>
+                        {ev.home}
                     </span>
-                    {homeScore !== null && (
-                        <span className={cn("text-sm font-black ml-1 flex-shrink-0", homeWin ? "text-green-400" : "text-slate-400")}>
-                            {homeScore}
+                    {hs !== null && (
+                        <span className={cn("text-sm font-black ml-3 flex-shrink-0 w-5 text-right", hWin ? "text-green-400" : "text-slate-500")}>
+                            {hs}
                         </span>
                     )}
                 </div>
-                <div className="flex items-center justify-between gap-2">
-                    <span className={cn("text-sm font-semibold truncate", awayWin ? "text-white" : "text-slate-500")}>
-                        {event.away}
+                {/* Away */}
+                <div className="flex items-center justify-between">
+                    <span className={cn("text-sm font-semibold truncate", aWin ? "text-white" : "text-slate-500")}>
+                        {ev.away}
                     </span>
-                    {awayScore !== null && (
-                        <span className={cn("text-sm font-black ml-1 flex-shrink-0", awayWin ? "text-green-400" : "text-slate-500")}>
-                            {awayScore}
+                    {as_ !== null && (
+                        <span className={cn("text-sm font-black ml-3 flex-shrink-0 w-5 text-right", aWin ? "text-green-400" : "text-slate-600")}>
+                            {as_}
                         </span>
                     )}
                 </div>
             </div>
 
             {/* Odds */}
-            <div className="flex gap-1 flex-shrink-0">
-                {event.odds && event.odds.length > 0 ? (
-                    event.odds.slice(0, 3).map((odd, i) => (
-                        <OddBtn key={i} label={odd.name || (i === 0 ? "1" : i === 1 ? "X" : "2")} value={odd.value} />
+            <div className="hidden sm:flex gap-1 flex-shrink-0">
+                {ev.odds && ev.odds.length > 0
+                    ? ev.odds.slice(0, 3).map((o, i) => (
+                        <OddChip key={i} label={o.name || (i === 0 ? "1" : i === 1 ? "X" : "2")} value={o.value} />
                     ))
-                ) : (
-                    ["1", "X", "2"].map(l => <OddBtn key={l} label={l} value="—" disabled />)
-                )}
+                    : ["1", "X", "2"].map(l => <OddChip key={l} label={l} value="—" muted />)
+                }
             </div>
 
-            <ChevronRight className="w-3.5 h-3.5 text-slate-700 group-hover:text-slate-400 flex-shrink-0 transition-colors" />
+            <ChevronRight className="w-4 h-4 text-slate-700 group-hover:text-slate-400 transition-colors flex-shrink-0" />
         </div>
     );
-};
+}
 
-// ── Odd Button ────────────────────────────────────────────────────────────────
-const OddBtn = ({ label, value, disabled }: { label: string; value: string; disabled?: boolean }) => (
-    <div className={cn(
-        "flex flex-col items-center justify-center w-12 py-1.5 rounded-lg border text-center transition-all select-none",
-        disabled
-            ? "bg-[#161b28] border-[#2d3348] cursor-default"
-            : "bg-[#161b28] border-[#2d3348] hover:border-green-500 hover:bg-green-600/10 cursor-pointer active:scale-95 group/odd"
-    )}>
-        <span className={cn("text-[8px] font-bold uppercase", disabled ? "text-slate-700" : "text-slate-500 group-hover/odd:text-green-400")}>
-            {label}
-        </span>
-        <span className={cn("text-xs font-black", disabled ? "text-slate-700" : "text-green-400")}>
-            {value}
-        </span>
-    </div>
-);
-
-export default SportsCategoryView;
+// ── Odd Chip ─────────────────────────────────────────────────────────────────
+function OddChip({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
+    return (
+        <div className={cn(
+            "flex flex-col items-center justify-center w-14 py-1.5 rounded-lg border text-center transition-all",
+            muted
+                ? "border-[#1e2433] bg-transparent"
+                : "border-[#263040] bg-[#131820] hover:border-green-500 hover:bg-green-600/10 cursor-pointer active:scale-95 group/o"
+        )}>
+            <span className={cn("text-[9px] font-bold uppercase", muted ? "text-slate-700" : "text-slate-500 group-hover/o:text-green-400")}>{label}</span>
+            <span className={cn("text-xs font-black", muted ? "text-slate-700" : "text-green-400")}>{value}</span>
+        </div>
+    );
+}

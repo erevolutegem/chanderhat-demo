@@ -52,14 +52,14 @@ export default function SportsCategoryView({ sportId, onSelectGame }: Props) {
         setErrorMsg(null);
         setMatches([]);
 
-        const base = process.env.NEXT_PUBLIC_API_URL || "https://dev.chanderhat.com";
 
         const go = async () => {
             try {
                 const p = new URLSearchParams();
                 if (tab !== "inplay") p.set("tab", tab);
                 if (sportId) p.set("sportId", String(sportId));
-                const url = `${base}/games/live${p.toString() ? `?${p}` : ""}`;
+                // Use Next.js API route which calls BetsAPI directly (server-side, no CORS issues)
+                const url = `/api/games${p.toString() ? `?${p}` : ""}`;
 
                 const r = await fetch(url, { cache: "no-store" });
                 if (!r.ok) throw new Error(`Error ${r.status} fetching matches`);

@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import SideNav from "@/components/SideNav";
 import HeroCarousel from "@/components/HeroCarousel";
 import GameMenu from "@/components/GameMenu";
-import GameGrid from "@/components/GameGrid";
+import SportsCategoryView from "@/components/SportsCategoryView";
 import Footer from "@/components/Footer";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import GameDetailModal from "@/components/GameDetailModal";
@@ -16,7 +16,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-primary-dark relative pb-16 lg:pb-0">
-      <div className="fixed top-0 left-0 z-[9999] bg-accent-yellow text-primary-dark text-xs font-black px-4 py-1 shadow-2xl tracking-tighter italic">CLEAN_UI_v8.1.0</div>
       <Navbar />
 
       <div className="max-w-7xl mx-auto flex">
@@ -24,7 +23,7 @@ export default function Home() {
         <main className="flex-1 overflow-hidden">
           <HeroCarousel />
           <GameMenu onSelectSport={setSelectedSport} selectedSport={selectedSport} />
-          <GameGrid sportId={selectedSport} onSelectGame={setSelectedGameId} />
+          <SportsCategoryView sportId={selectedSport} onSelectGame={setSelectedGameId} />
         </main>
       </div>
 

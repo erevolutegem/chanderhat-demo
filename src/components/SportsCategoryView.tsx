@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Activity, Clock, ChevronRight, Loader2, Calendar, CalendarDays, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -51,50 +51,69 @@ const SportsCategoryView = ({ sportId, onSelectGame }: SportsCategoryViewProps) 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchMatches = useCallback(async (tab: TabKey) => {
-        setLoading(true);
-        setError(null);
-
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dev.chanderhat.com";
-
-        try {
-            let url: string;
-            if (tab === "inplay") {
-                url = sportId
-                    ? `${apiUrl}/games/live?sportId=${sportId}`
-                    : `${apiUrl}/games/live`;
-            } else {
-                url = sportId
-                    ? `${apiUrl}/games/upcoming?sportId=${sportId}&date=${tab}`
-                    : `${apiUrl}/games/upcoming?date=${tab}`;
-            }
-
-            const resp = await fetch(url, { cache: "no-store" });
-            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-
-            const data = await resp.json();
-            if (data?.results?.length > 0) {
-                setMatches(data.results);
-            } else {
-                setMatches([]);
-                if (data?.error) setError(data.error);
-            }
-        } catch (err: any) {
-            setError(err.message);
-            setMatches([]);
-        } finally {
-            setLoading(false);
-        }
+    // When sport changes, reset to inplay tab
+    useEffect(() => {
+        setActiveTab("inplay");
     }, [sportId]);
 
     useEffect(() => {
-        fetchMatches(activeTab);
-        // Auto-refresh only for inplay tab
+        let cancelled = false;
+        setLoading(true);
+        setError(null);
+        setMatches([]);
+
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dev.chanderhat.com";
+
+        const load = async () => {
+            try {
+                let url: string;
+                if (activeTab === "inplay") {
+                    url = sportId
+                        ? `${apiUrl}/games/live?sportId=${sportId}`
+                        : `${apiUrl}/games/live`;
+                } else {
+                    // Today or Tomorrow
+                    const params = new URLSearchParams({ date: activeTab });
+                    if (sportId) params.set("sportId", String(sportId));
+                    url = `${apiUrl}/games/upcoming?${params.toString()}`;
+                }
+
+                console.log("[SportsCategoryView] Fetching:", url);
+                const resp = await fetch(url, { cache: "no-store" });
+                if (!resp.ok) throw new Error(`HTTP ${resp.status} — ${url}`);
+
+                const data = await resp.json();
+                if (cancelled) return;
+
+                if (Array.isArray(data?.results) && data.results.length > 0) {
+                    setMatches(data.results);
+                } else {
+                    setMatches([]);
+                    setError(data?.error || "No matches available");
+                }
+            } catch (err: any) {
+                if (!cancelled) {
+                    setError(err.message);
+                    setMatches([]);
+                }
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        };
+
+        load();
+
+        // Only auto-refresh on inplay tab
+        let interval: NodeJS.Timeout | undefined;
         if (activeTab === "inplay") {
-            const iv = setInterval(() => fetchMatches("inplay"), 30000);
-            return () => clearInterval(iv);
+            interval = setInterval(load, 30000);
         }
-    }, [activeTab, fetchMatches]);
+
+        return () => {
+            cancelled = true;
+            clearInterval(interval);
+        };
+    }, [sportId, activeTab]);
 
     // Group by league
     const grouped = matches.reduce<Record<string, MatchEvent[]>>((acc, m) => {

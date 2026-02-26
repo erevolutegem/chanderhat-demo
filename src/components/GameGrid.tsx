@@ -6,9 +6,10 @@ import { useGames } from "@/hooks/useGames";
 
 interface GameGridProps {
     sportId?: number;
+    onSelectGame: (id: string) => void;
 }
 
-const GameGrid = ({ sportId }: GameGridProps) => {
+const GameGrid = ({ sportId, onSelectGame }: GameGridProps) => {
     const { games, loading, error } = useGames(sportId);
 
     if (loading) {
@@ -40,7 +41,7 @@ const GameGrid = ({ sportId }: GameGridProps) => {
                     {games.length > 0 ? games.map((game) => (
                         <div
                             key={game.id}
-                            onClick={() => window.open(`https://www.bet365.com/#/IP/B${game.id}`, '_blank')}
+                            onClick={() => onSelectGame(game.id.toString())}
                             className="relative aspect-[4/3] rounded-2xl overflow-hidden group cursor-pointer bg-white/5 border border-white/5 hover:border-accent-yellow/50 transition-all font-sans"
                         >
                             <div className={`absolute inset-0 bg-gradient-to-br ${game.color} opacity-80 group-hover:opacity-100 transition-opacity`} />

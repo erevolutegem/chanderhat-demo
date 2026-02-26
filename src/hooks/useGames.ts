@@ -38,10 +38,10 @@ export const useGames = (sportId?: number) => {
                 console.log("[useGames] Received data:", !!data, "Results count:", data?.results?.length);
 
                 if (data && Array.isArray(data.results) && data.results.length > 0) {
-                    const mappedGames = data.results.slice(0, 16).map((item: any, index: number) => ({
+                    const mappedGames = data.results.map((item: any, index: number) => ({
                         id: item.id || `game-${index}`,
-                        name: item.home?.name ? `${item.home.name} vs ${item.away?.name || '??'}` : "Live Match",
-                        type: item.sport_id === "3" ? "Cricket" : item.sport_id === "1" ? "Soccer" : "Live",
+                        name: item.home && item.away ? `${item.home} vs ${item.away}` : (item.name || "Live Match"),
+                        type: item.league || "Live",
                         provider: "BETSAPI",
                         color: ["from-blue-600 to-indigo-900", "from-pink-600 to-purple-900", "from-accent-red to-orange-900", "from-yellow-600 to-amber-900"][index % 4],
                         odds: item.odds

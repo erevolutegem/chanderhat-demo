@@ -5,12 +5,12 @@ import { Trophy, Dribbble, Ghost, Target, Play, Flame, LayoutGrid } from "lucide
 import { cn } from "@/lib/utils";
 
 const categories = [
-    { name: "Sports", id: 1, icon: Dribbble, color: "text-blue-400", count: "12 LIVE" },
-    { name: "Casino", id: 999, icon: Trophy, color: "text-yellow-400", count: "5 LIVE" },
-    { name: "Live", id: undefined, icon: Flame, color: "text-red-400", count: "24 LIVE" },
-    { name: "Virtual", id: 18, icon: Ghost, color: "text-purple-400", count: "" },
-    { name: "Table", id: 13, icon: Target, color: "text-emerald-400", count: "3 LIVE" },
-    { name: "Slots", id: 998, icon: Play, color: "text-orange-400", count: "15 LIVE" },
+    { name: "All", id: undefined, icon: Flame, color: "text-red-400", count: "LIVE" },
+    { name: "Soccer", id: 1, icon: Dribbble, color: "text-blue-400", count: "" },
+    { name: "Tennis", id: 13, icon: Target, color: "text-emerald-400", count: "" },
+    { name: "Basketball", id: 18, icon: Play, color: "text-orange-400", count: "" },
+    { name: "American Football", id: 12, icon: Trophy, color: "text-yellow-400", count: "" },
+    { name: "Cricket", id: 3, icon: Flame, color: "text-red-400", count: "" },
 ];
 
 interface GameMenuProps {

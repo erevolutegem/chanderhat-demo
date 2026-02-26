@@ -3,9 +3,9 @@
 import React from "react";
 import { Globe, Plus, Search, ExternalLink, Settings, MoreVertical, Trash2, Edit, X, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 const SitesManager = () => {
-    const [isDeployModalOpen, setIsDeployModalOpen] = React.useState(false);
     const [sites] = React.useState([
         { id: 1, domain: "playbaji.live", template: "playbaji", users: "1,250", revenue: "$45,280", status: "online", growth: "+12%" },
         { id: 2, domain: "chanderhat.demo", template: "classic", users: "12", revenue: "$120", status: "setup", growth: "0%" },
@@ -23,16 +23,13 @@ const SitesManager = () => {
                         Operational matrix of federated sportsbooks
                     </p>
                 </div>
-                <button
-                    onClick={() => setIsDeployModalOpen(true)}
+                <Link
+                    href="/dashboard/owner/sites/new"
                     className="flex items-center justify-center gap-4 px-8 md:px-10 py-4 md:py-6 bg-accent-yellow hover:bg-yellow-500 text-primary-dark rounded-[2rem] font-black text-[10px] md:text-xs uppercase tracking-[0.2em] transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-accent-yellow/20 group"
                 >
                     <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-500" /> Deploy New Site
-                </button>
+                </Link>
             </div>
-
-            {/* Deploy Modal */}
-            <DeployModal isOpen={isDeployModalOpen} onClose={() => setIsDeployModalOpen(false)} />
 
             {/* Filters & Search */}
             <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
@@ -107,82 +104,6 @@ const FilterBadge = ({ label, active }: { label: string; active?: boolean }) => 
     )}>
         {label}
     </button>
-);
-
-const DeployModal = ({ isOpen, onClose }: any) => {
-    if (!isOpen) return null;
-    return (
-        <div className="fixed inset-0 bg-primary-dark/80 backdrop-blur-3xl z-[2000] flex items-end sm:items-center justify-center p-0 sm:p-4">
-            <div className="bg-secondary-dark border-t sm:border border-white/5 w-full max-w-2xl max-h-[95vh] flex flex-col rounded-t-[2.5rem] sm:rounded-[3.5rem] relative animate-in slide-in-from-bottom-20 duration-500 overflow-hidden group shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
-                <div className="absolute -right-32 -top-32 w-80 h-80 bg-accent-yellow/5 rounded-full blur-[100px]" />
-
-                {/* Modal Header */}
-                <div className="p-8 md:p-12 pb-4 md:pb-6 flex items-center justify-between border-b border-white/5">
-                    <div>
-                        <h3 className="text-2xl md:text-4xl font-black text-white italic uppercase tracking-tighter leading-none">
-                            Deploy <span className="text-accent-yellow">Whitelabel</span>
-                        </h3>
-                        <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mt-2">Initialize new node in the matrix</p>
-                    </div>
-                    <button onClick={onClose} className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl text-white/40 hover:text-white transition-all active:scale-95">
-                        <X className="w-6 h-6" />
-                    </button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-8 md:p-12 space-y-8 custom-scrollbar">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-                        <div className="space-y-6 md:space-y-8">
-                            <ModalInput label="Domain Namespace" placeholder="e.g. baji-live.net" />
-                            <ModalInput label="Operational Title" placeholder="e.g. Baji Live" />
-                            <div className="space-y-3">
-                                <label className="text-[9px] md:text-[10px] font-black uppercase text-white/30 tracking-[0.2em] pl-1">Configuration Template</label>
-                                <div className="relative group">
-                                    <select className="w-full bg-white/[0.03] border border-white/5 outline-none rounded-2xl md:rounded-[1.5rem] py-4.5 md:py-6 px-6 md:px-8 text-xs md:text-sm font-black text-white focus:border-accent-yellow/40 transition-all appearance-none cursor-pointer tracking-wider">
-                                        <option className="bg-secondary-dark">Modern Playbaji (v2)</option>
-                                        <option className="bg-secondary-dark">Midnight Sports</option>
-                                        <option className="bg-secondary-dark">Classic Premium</option>
-                                    </select>
-                                    <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-white/20 group-hover:text-accent-yellow transition-colors">
-                                        <Plus className="w-4 h-4 rotate-45" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <label className="text-[9px] md:text-[10px] font-black uppercase text-white/30 tracking-[0.2em] pl-1">Identity Assets</label>
-                            <div className="w-full h-48 md:h-full bg-white/[0.02] rounded-[2rem] border-2 border-dashed border-white/10 flex flex-col items-center justify-center text-center p-8 group/drop hover:border-accent-yellow/40 transition-all cursor-pointer shadow-inner">
-                                <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover/drop:scale-110 group-hover/drop:bg-accent-yellow/10 transition-all">
-                                    <Globe className="w-8 h-8 text-white/20 group-hover/drop:text-accent-yellow transition-colors" />
-                                </div>
-                                <p className="text-[10px] md:text-xs font-black uppercase text-white/30 group-hover/drop:text-white transition-colors leading-relaxed tracking-widest">
-                                    Upload Brand Logo<br />
-                                    <span className="text-[8px] md:text-[9px] font-bold text-white/10 block mt-2 opacity-50">PNG/SVG MAX 2MB</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Sticky Footer */}
-                <div className="p-8 md:p-12 pt-6 md:pt-8 bg-secondary-dark/80 backdrop-blur-3xl border-t border-white/5 flex flex-col sm:flex-row gap-4">
-                    <button onClick={onClose} className="flex-1 py-5 md:py-6 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-2xl md:rounded-[2rem] font-black text-[10px] md:text-xs uppercase tracking-[0.2em] transition-all order-2 sm:order-1 active:scale-95">Cancel Operation</button>
-                    <button className="flex-1 py-5 md:py-6 bg-accent-yellow hover:bg-yellow-500 text-primary-dark rounded-2xl md:rounded-[2rem] font-black text-[10px] md:text-xs uppercase tracking-[0.2em] transition-all shadow-2xl shadow-accent-yellow/20 order-1 sm:order-2 active:scale-95">Initiate Deployment</button>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const ModalInput = ({ label, placeholder }: any) => (
-    <div className="space-y-3">
-        <label className="text-[9px] md:text-[10px] font-black uppercase text-white/30 tracking-[0.2em] pl-1">{label}</label>
-        <input
-            type="text"
-            placeholder={placeholder}
-            className="w-full bg-white/[0.03] border border-white/5 outline-none rounded-2xl md:rounded-[1.5rem] py-4.5 md:py-6 px-6 md:px-8 text-xs md:text-sm font-black text-white transition-all focus:border-accent-yellow/40 tracking-wider placeholder:text-white/5"
-        />
-    </div>
 );
 
 

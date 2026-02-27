@@ -21,9 +21,9 @@ export default function Navbar({ onLoginClick }: { onLoginClick?: () => void }) 
 
                     {/* Logo (Text/Brand) */}
                     <a href="/" className="flex items-center gap-2 flex-shrink-0 text-white no-underline">
-                        <div className="hidden sm:flex flex-col leading-none">
-                            <span className="font-black text-[22px] tracking-tight">
-                                play<span className="text-[var(--primary)]">baji</span>
+                        <div className="flex flex-col leading-none">
+                            <span className="font-black text-[26px] tracking-tight">
+                                play<span className="text-[var(--primary)] text-shadow-sm">baji</span>
                             </span>
                         </div>
                     </a>
@@ -84,8 +84,8 @@ export default function Navbar({ onLoginClick }: { onLoginClick?: () => void }) 
             </div>
 
             {/* MAIN HEADER NAV (Categories beneath header) */}
-            <div className="bg-[var(--surface)] border-b border-[var(--border)] overflow-x-auto scrollbar-hide hidden lg:block">
-                <div className="max-w-[1440px] mx-auto px-4 flex items-center h-[50px]">
+            <div className="bg-[var(--surface-3)] border-b border-[var(--border)] overflow-x-auto scrollbar-hide hidden lg:block">
+                <div className="max-w-[1440px] mx-auto px-4 flex items-center h-[46px] gap-6">
                     {[
                         { label: "Home", href: "/" },
                         { label: "In-Play", href: "/#", active: true }, // Playbaji highlights In-Play often
@@ -103,7 +103,7 @@ export default function Navbar({ onLoginClick }: { onLoginClick?: () => void }) 
                         <a
                             key={i}
                             href={item.href}
-                            className={`px-4 h-full flex items-center text-[14px] font-semibold whitespace-nowrap transition-colors border-b-[3px]
+                            className={`px-1 h-full flex items-center text-[13px] font-bold whitespace-nowrap transition-colors border-b-[3px]
                                 ${item.active
                                     ? "text-[var(--primary)] border-[var(--primary)]"
                                     : "text-white border-transparent hover:text-[var(--primary)]"

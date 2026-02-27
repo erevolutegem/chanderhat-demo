@@ -22,13 +22,10 @@ export default function CasinoGrid({ title, games }: { title: string, games: Cas
                         key={game.id}
                         className="relative w-full aspect-[4/3] rounded-[4px] overflow-hidden group cursor-pointer border border-[var(--border)]"
                     >
-                        {/* Background Image (Placholder fallback for now) */}
-                        <div className="absolute inset-0 bg-slate-800">
-                            {/* <Image src={game.image} fill alt={game.name} className="object-cover group-hover:scale-105 transition-transform duration-300" /> */}
-                            {/* Simple colored block to mock game art */}
-                            <div className="w-full h-full bg-gradient-to-br from-indigo-900 to-purple-900 group-hover:scale-110 transition-transform duration-500 flex items-center justify-center p-4 text-center">
-                                <span className="text-white/20 font-black text-2xl">{game.name}</span>
-                            </div>
+                        {/* Background Image */}
+                        <div className="absolute inset-0 bg-slate-900">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={game.image} alt={game.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         </div>
 
                         {/* Playbaji Bottom Overlay Strip */}
@@ -42,7 +39,7 @@ export default function CasinoGrid({ title, games }: { title: string, games: Cas
                             <div className="h-full bg-[var(--custom-purple)] flex items-center justify-center px-3"
                                 style={{ clipPath: "polygon(15% 0, 100% 0, 100% 100%, 0 100%)" }}
                             >
-                                <span className="text-white text-[11px] font-bold uppercase tracking-wide ml-1">Play Now</span>
+                                <span className="text-white text-[10px] md:text-[11px] font-bold uppercase tracking-wide ml-1 whitespace-nowrap">Play Now</span>
                             </div>
                         </div>
                     </div>

@@ -12,22 +12,23 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import AuthModal from "@/components/AuthModal";
 
 // Mock data for Playbaji Clone Casino Grid
+// Using Unsplash casino/entertainment/abstract imagery to mimic realistic game covers
 const LIVE_CASINO_GAMES = [
-  { id: "c1", name: "Mono Poly", image: "/api/placeholder/400/300" },
-  { id: "c2", name: "Mega Roulette", image: "/api/placeholder/400/300" },
-  { id: "c3", name: "Mega Sicbo", image: "/api/placeholder/400/300" },
-  { id: "c4", name: "Mega Wheel", image: "/api/placeholder/400/300" },
-  { id: "c5", name: "Magic Wheel", image: "/api/placeholder/400/300" },
-  { id: "c6", name: "American Roulette", image: "/api/placeholder/400/300" },
-  { id: "c7", name: "European Roulette", image: "/api/placeholder/400/300" },
-  { id: "c8", name: "Roll to Luck", image: "/api/placeholder/400/300" },
+  { id: "c1", name: "Mono Poly", image: "https://images.unsplash.com/photo-1596838132731-3301c3fd4317?w=400&h=300&fit=crop" },
+  { id: "c2", name: "Mega Roulette", image: "https://images.unsplash.com/photo-1606167668511-22c66141a0e1?w=400&h=300&fit=crop" },
+  { id: "c3", name: "Mega Sicbo", image: "https://images.unsplash.com/photo-1517409419131-0bb644d6a19f?w=400&h=300&fit=crop" },
+  { id: "c4", name: "Mega Wheel", image: "https://images.unsplash.com/photo-1498837167922-41c30907e54f?w=400&h=300&fit=crop" },
+  { id: "c5", name: "Magic Wheel", image: "https://images.unsplash.com/photo-1518542981329-8fbafce028f0?w=400&h=300&fit=crop" },
+  { id: "c6", name: "American Roulette", image: "https://images.unsplash.com/photo-1621252179027-94459d278660?w=400&h=300&fit=crop" },
+  { id: "c7", name: "European Roulette", image: "https://images.unsplash.com/photo-1563725679468-b7bb5ff493ea?w=400&h=300&fit=crop" },
+  { id: "c8", name: "Roll to Luck", image: "https://images.unsplash.com/photo-1605870445919-838d190e8e1b?w=400&h=300&fit=crop" },
 ];
 
 const SLOT_GAMES = [
-  { id: "s1", name: "French Roulette", image: "/api/placeholder/400/300" },
-  { id: "s2", name: "Jili City", image: "/api/placeholder/400/300" },
-  { id: "s3", name: "Slot Games (Playball)", image: "/api/placeholder/400/300" },
-  { id: "s4", name: "Lucky 777", image: "/api/placeholder/400/300" },
+  { id: "s1", name: "French Roulette", image: "https://images.unsplash.com/photo-1614050212354-9ee799863863?w=400&h=300&fit=crop" },
+  { id: "s2", name: "Jili City", image: "https://images.unsplash.com/photo-1574880018874-82ea08871bd7?w=400&h=300&fit=crop" },
+  { id: "s3", name: "Slot Games (Playball)", image: "https://images.unsplash.com/photo-1550296716-eec56184f4f7?w=400&h=300&fit=crop" },
+  { id: "s4", name: "Lucky 777", image: "https://images.unsplash.com/photo-1596838132731-3301c3fd4317?w=400&h=300&fit=crop" },
 ];
 
 export default function Home() {

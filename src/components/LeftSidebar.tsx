@@ -3,10 +3,10 @@ import React from "react";
 import { Activity, Trophy, Star, TrendingUp } from "lucide-react";
 
 const SPORTS = [
-    { id: undefined, label: "All Sports", icon: "⚡", color: "#e8173a" },
+    { id: undefined, label: "All Sports", icon: "⚡", color: "var(--primary)" },
     { id: 3, label: "Cricket", icon: "🏏", color: "#22c55e" },
     { id: 1, label: "Soccer", icon: "⚽", color: "#3b82f6" },
-    { id: 13, label: "Tennis", icon: "🎾", color: "#f59e0b" },
+    { id: 13, label: "Tennis", icon: "🎾", color: "var(--primary)" },
     { id: 18, label: "Basketball", icon: "🏀", color: "#f97316" },
     { id: 12, label: "Am. Football", icon: "🏈", color: "#8b5cf6" },
     { id: 4, label: "Ice Hockey", icon: "🏒", color: "#0ea5e9" },
@@ -24,18 +24,18 @@ export default function LeftSidebar({ selectedSport, onSelectSport, matchCounts 
     return (
         <aside style={{
             width: 210, flexShrink: 0, display: "flex", flexDirection: "column",
-            background: "#131220", borderRight: "1px solid #2d2c45", minHeight: "calc(100vh - 98px)"
+            background: "var(--bg-2)", borderRight: "1px solid var(--border)", minHeight: "calc(100vh - 98px)", borderRadius: "var(--radius)"
         }}
-            className="hidden lg:flex">
+            className="hidden lg:flex overflow-hidden">
 
             {/* ── Section label ── */}
-            <div style={{ padding: "10px 14px 8px", borderBottom: "1px solid #2d2c45", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ padding: "10px 14px 8px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 8 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <span className="live-dot" />
-                    <span style={{ fontSize: 11, fontWeight: 800, color: "#e8173a", letterSpacing: 1.5, textTransform: "uppercase" }}>Live</span>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: "var(--primary)", letterSpacing: 1.5, textTransform: "uppercase" }}>Live</span>
                 </div>
                 {totalLive > 0 && (
-                    <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: "#9997b8" }}>
+                    <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: "var(--text-3)" }}>
                         {totalLive} matches
                     </span>
                 )}
@@ -56,7 +56,7 @@ export default function LeftSidebar({ selectedSport, onSelectSport, matchCounts 
                                 width: "100%", display: "flex", alignItems: "center", gap: 10,
                                 padding: "10px 14px", border: "none", cursor: "pointer", textAlign: "left",
                                 borderLeft: `3px solid ${active ? sport.color : "transparent"}`,
-                                background: active ? `${sport.color}12` : "transparent",
+                                background: active ? `var(--surface-3)` : "transparent",
                                 transition: "background 0.15s, border-color 0.15s",
                             }}
                             onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = "#1a192a"; } }}

@@ -1,10 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import {
-    Activity, Calendar, CalendarDays,
-    ChevronRight, RefreshCw, X, Minus, Plus, Check
-} from "lucide-react";
+import { Activity, Calendar, CalendarDays, RefreshCw, ChevronRight, X, Minus, Plus, Check } from "lucide-react";
 
 export interface Match {
     id: string;
@@ -21,423 +18,329 @@ type Tab = "inplay" | "today" | "tomorrow";
 
 interface BetEntry {
     matchId: string;
-    matchName: string;
-    team: string;      // "home" | "away"
+    team: string;
     type: "Back" | "Lay";
     odd: string;
+    teamName: string;
     stake: string;
 }
 
-const TABS = [
-    { key: "inplay" as Tab, label: "In-Play", Icon: Activity },
-    { key: "today" as Tab, label: "Today", Icon: Calendar },
-    { key: "tomorrow" as Tab, label: "Tomorrow", Icon: CalendarDays },
-];
-
-const SPORT_NAME: Record<string, string> = {
+const SPORT_LABELS: Record<string, string> = {
     "1": "Soccer", "3": "Cricket", "13": "Tennis",
     "18": "Basketball", "4": "Ice Hockey", "12": "American Football",
 };
 
-const QUICK_STAKES = [100, 200, 500, 1000, 5000, 10000];
-
 interface Props {
     sportId?: number;
-    onCountChange?: (counts: Record<string, number>) => void;
+    onCountChange?: (c: Record<string, number>) => void;
 }
 
 export default function MatchList({ sportId, onCountChange }: Props) {
     const [tab, setTab] = useState<Tab>("inplay");
     const [matches, setMatches] = useState<Match[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+    const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
     const [activeBet, setActiveBet] = useState<BetEntry | null>(null);
-    const [betSuccess, setBetSuccess] = useState(false);
+    const [betOk, setBetOk] = useState(false);
 
     useEffect(() => { setTab("inplay"); setActiveBet(null); }, [sportId]);
 
-    const fetch_ = useCallback(async (initial = false) => {
-        if (initial) setLoading(true);
-        setError(null);
+    const load = useCallback(async (first = false) => {
+        if (first) setLoading(true);
         try {
-            const p = new URLSearchParams();
-            if (sportId) p.set("sportId", String(sportId));
-            const res = await fetch(`/api/games${p.toString() ? `?${p}` : ""}`, { cache: "no-store" });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await res.json();
-            const list: Match[] = Array.isArray(data?.results) ? data.results : [];
+            const q = new URLSearchParams();
+            if (sportId) q.set("sportId", String(sportId));
+            const r = await fetch(`/api/games${q.toString() ? "?" + q : ""}`, { cache: "no-store" });
+            const d = await r.json();
+            const list: Match[] = Array.isArray(d?.results) ? d.results : [];
             setMatches(list);
-            setLastUpdated(new Date());
+            setLastUpdate(new Date());
             if (onCountChange) {
-                const counts: Record<string, number> = {};
-                for (const m of list) counts[m.sport_id] = (counts[m.sport_id] || 0) + 1;
-                onCountChange(counts);
+                const c: Record<string, number> = {};
+                list.forEach(m => { c[m.sport_id] = (c[m.sport_id] ?? 0) + 1; });
+                onCountChange(c);
             }
-        } catch (e: any) { setError(e.message); }
-        finally { if (initial) setLoading(false); }
+        } catch { }
+        finally { if (first) setLoading(false); }
     }, [sportId, onCountChange]);
 
     useEffect(() => {
-        let dead = false;
-        fetch_(true);
-        const iv = tab === "inplay" ? setInterval(() => !dead && fetch_(), 30_000) : undefined;
-        return () => { dead = true; clearInterval(iv); };
-    }, [fetch_, tab]);
+        let alive = true;
+        load(true);
+        const iv = setInterval(() => alive && load(), 30_000);
+        return () => { alive = false; clearInterval(iv); };
+    }, [load]);
 
-    // Group by league
     const grouped: Record<string, Match[]> = {};
-    for (const m of matches) (grouped[m.league] ??= []).push(m);
+    matches.forEach(m => { (grouped[m.league] ??= []).push(m); });
+    const sportLabel = sportId ? (SPORT_LABELS[String(sportId)] ?? "Sport") : "All Sports";
 
-    const sportLabel = sportId ? (SPORT_NAME[String(sportId)] ?? "Sport") : "All Sports";
-
-    const handleSelectOdd = (match: Match, team: string, type: "Back" | "Lay", odd: string) => {
-        if (activeBet?.matchId === match.id && activeBet?.type === type && activeBet?.team === team) {
-            setActiveBet(null);
-            return;
+    const selectOdd = (m: Match, team: string, type: "Back" | "Lay", odd: string, teamName: string) => {
+        if (activeBet?.matchId === m.id && activeBet.team === team && activeBet.type === type) {
+            setActiveBet(null); return;
         }
-        setActiveBet({
-            matchId: match.id,
-            matchName: team === "home" ? match.home : match.away,
-            team, type, odd, stake: "",
-        });
-        setBetSuccess(false);
+        setActiveBet({ matchId: m.id, team, type, odd, teamName, stake: "" });
+        setBetOk(false);
     };
 
-    const handlePlaceBet = () => {
-        if (!activeBet || !activeBet.stake || parseFloat(activeBet.stake) <= 0) return;
-        setBetSuccess(true);
-        setTimeout(() => { setActiveBet(null); setBetSuccess(false); }, 2000);
+    const placeBet = () => {
+        if (!activeBet || parseFloat(activeBet.stake) <= 0) return;
+        setBetOk(true);
+        setTimeout(() => { setActiveBet(null); setBetOk(false); }, 2000);
+    };
+
+    const S = { // shared style objects
+        sectionHead: { background: "#1e1e3a", borderBottom: "1px solid #2a2a4a", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", position: "sticky" as const, top: 112, zIndex: 10 },
+        tabBar: { background: "#16163a", borderBottom: "1px solid #2a2a4a", display: "flex" },
+        colHead: { background: "#12122a", borderBottom: "1px solid #1e1e3a", display: "flex", alignItems: "center", padding: "5px 12px" },
+        leagueRow: { background: "#1e1e3a", borderTop: "1px solid #2a2a4a", borderBottom: "1px solid #14142a", display: "flex", alignItems: "center", gap: 8, padding: "5px 12px" },
     };
 
     return (
-        <div className="flex-1 min-w-0 flex flex-col">
-            {/* Section header */}
-            <div className="flex items-center justify-between px-3 py-2.5 sticky top-[112px] z-10"
-                style={{ background: "#1e1e3a", borderBottom: "1px solid #2a2a4a" }}>
-                <div className="flex items-center gap-2">
-                    <Activity className="w-4 h-4" style={{ color: "#e02020" }} />
-                    <span className="font-bold text-white text-sm">{sportLabel}</span>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+            {/* Header */}
+            <div style={S.sectionHead}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <Activity size={16} color="#e02020" />
+                    <span style={{ fontWeight: 700, color: "#fff", fontSize: 13 }}>{sportLabel}</span>
                     {tab === "inplay" && matches.length > 0 && (
-                        <span className="badge-live"><span className="live-dot" />{matches.length} Live</span>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 7px", borderRadius: 20, background: "rgba(224,32,32,0.15)", color: "#e02020", fontSize: 11, fontWeight: 700, border: "1px solid rgba(224,32,32,0.3)" }}>
+                            <span className="live-dot" />{matches.length} Live
+                        </span>
                     )}
                 </div>
-                <button onClick={() => fetch_()} className="text-slate-500 hover:text-white p-1 rounded transition-colors">
-                    <RefreshCw className="w-3.5 h-3.5" />
+                <button onClick={() => load()} style={{ background: "none", border: "none", color: "#555578", cursor: "pointer" }}>
+                    <RefreshCw size={14} />
                 </button>
             </div>
 
             {/* Tabs */}
-            <div className="flex" style={{ background: "#16163a", borderBottom: "1px solid #2a2a4a" }}>
-                {TABS.map(({ key, label, Icon }) => (
+            <div style={S.tabBar}>
+                {([["inplay", "In-Play", Activity], ["today", "Today", Calendar], ["tomorrow", "Tomorrow", CalendarDays]] as const).map(([key, label, Icon]) => (
                     <button key={key} onClick={() => setTab(key)}
-                        className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold transition-all border-b-2"
-                        style={{ borderColor: tab === key ? "#e02020" : "transparent", color: tab === key ? "#fff" : "#7777aa", background: tab === key ? "rgba(224,32,32,0.08)" : "transparent" }}>
-                        <Icon className="w-3.5 h-3.5" />{label}
+                        style={{
+                            display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", borderBottom: "2px solid", transition: "all 0.15s",
+                            borderColor: tab === key ? "#e02020" : "transparent",
+                            color: tab === key ? "#fff" : "#777799",
+                            background: tab === key ? "rgba(224,32,32,0.08)" : "transparent"
+                        }}>
+                        <Icon size={14} />{label}
                     </button>
                 ))}
             </div>
 
-            {/* Column headers */}
-            <div className="hidden md:flex items-center px-3 py-1.5" style={{ background: "#12122a", borderBottom: "1px solid #1e1e3a" }}>
-                <div className="flex-1 text-[11px] font-bold uppercase tracking-wide" style={{ color: "#444466" }}>Event</div>
-                <div className="flex gap-1" style={{ minWidth: 168 }}>
-                    {["Back", "Lay"].map(l => (
-                        <div key={l} className="flex-1 text-center text-[11px] font-bold" style={{ color: l === "Back" ? "#72bbef" : "#f994ba" }}>{l}</div>
-                    ))}
+            {/* Back/Lay column headers — desktop */}
+            <div style={{ ...S.colHead, display: undefined }} className="hidden md:flex">
+                <div style={{ flex: 1, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#444466" }}>Event</div>
+                <div style={{ display: "flex", gap: 4 }}>
+                    {["Back", "Lay"].map(l => <div key={l} style={{ width: 70, textAlign: "center", fontSize: 11, fontWeight: 700, color: l === "Back" ? "#72bbef" : "#f994ba" }}>{l}</div>)}
                 </div>
             </div>
 
-            {/* Loading skeletons */}
+            {/* Loading */}
             {loading && (
-                <div className="p-3 space-y-2">
-                    {[...Array(6)].map((_, i) => (
-                        <div key={i} className="rounded-lg overflow-hidden">
-                            <div className="skeleton h-7 mb-px" />
-                            <div className="skeleton h-12 mb-px" />
-                            <div className="skeleton h-12" />
+                <div style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                    {[1, 2, 3, 4, 5].map(i => (
+                        <div key={i}>
+                            <div className="skeleton" style={{ height: 28, marginBottom: 2, borderRadius: 6 }} />
+                            <div className="skeleton" style={{ height: 48, marginBottom: 2, borderRadius: 0 }} />
+                            <div className="skeleton" style={{ height: 48, borderRadius: 6 }} />
                         </div>
                     ))}
                 </div>
             )}
 
-            {/* Empty state */}
+            {/* Empty */}
             {!loading && matches.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-20 gap-3">
-                    <div className="text-5xl">{sportId === 3 ? "🏏" : sportId === 1 ? "⚽" : sportId === 13 ? "🎾" : sportId === 18 ? "🏀" : "🎯"}</div>
-                    <p className="text-sm font-semibold" style={{ color: "#7777aa" }}>No live {sportLabel} matches right now</p>
-                    <p className="text-xs" style={{ color: "#444466" }}>Live matches appear as they start. Check back soon.</p>
-                    {error && <p className="text-xs" style={{ color: "#ff4444" }}>{error}</p>}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 20px", gap: 12 }}>
+                    <div style={{ fontSize: 48 }}>{sportId === 3 ? "🏏" : sportId === 1 ? "⚽" : sportId === 13 ? "🎾" : sportId === 18 ? "🏀" : "🎯"}</div>
+                    <p style={{ color: "#7777aa", fontWeight: 600, fontSize: 14 }}>No live {sportLabel} matches right now</p>
+                    <p style={{ color: "#444466", fontSize: 12 }}>Live matches appear as they start.</p>
                 </div>
             )}
 
-            {/* Match list */}
+            {/* Matches */}
             {!loading && Object.entries(grouped).map(([league, evs]) => (
                 <div key={league}>
-                    {/* League header */}
-                    <div className="flex items-center gap-2 px-3 py-1.5" style={{ background: "#1e1e3a", borderTop: "1px solid #2a2a4a", borderBottom: "1px solid #14142a" }}>
-                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: "#ffd700" }} />
-                        <span className="text-[11px] font-bold uppercase tracking-wide truncate" style={{ color: "#ffd700" }}>{league}</span>
-                        <span className="ml-auto text-[10px]" style={{ color: "#333355" }}>{evs.length}</span>
+                    {/* League row */}
+                    <div style={S.leagueRow}>
+                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#ffd700", flexShrink: 0 }} />
+                        <span style={{ color: "#ffd700", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>{league}</span>
+                        <span style={{ color: "#333355", fontSize: 10 }}>{evs.length}</span>
                     </div>
 
-                    {evs.map(ev => (
-                        <React.Fragment key={ev.id}>
-                            <MatchRow
-                                ev={ev}
-                                activeBet={activeBet}
-                                onSelectOdd={handleSelectOdd}
-                            />
-                            {/* Inline bet panel */}
-                            {activeBet?.matchId === ev.id && (
-                                <InlineBetPanel
-                                    bet={activeBet}
-                                    onStakeChange={s => setActiveBet(prev => prev ? { ...prev, stake: s } : null)}
-                                    onClose={() => setActiveBet(null)}
-                                    onPlace={handlePlaceBet}
-                                    success={betSuccess}
-                                />
-                            )}
-                        </React.Fragment>
-                    ))}
+                    {evs.map(ev => {
+                        const [hs, as_] = (ev.ss ?? "").split("-").map(s => s.trim());
+                        const hWin = hs && as_ && Number(hs) > Number(as_);
+                        const aWin = hs && as_ && Number(as_) > Number(hs);
+                        const o1 = ev.odds[0]?.value ?? null;
+                        const o2 = ev.odds[1]?.value ?? null;
+                        const o3 = ev.odds[2]?.value ?? null;
+                        const isActive = activeBet?.matchId === ev.id;
+
+                        const OddBtn = ({ team, type, odd }: { team: string; type: "Back" | "Lay"; odd: string | null }) => {
+                            const on = isActive && activeBet?.team === team && activeBet?.type === type;
+                            const isBack = type === "Back";
+                            return (
+                                <button disabled={!odd} onClick={() => odd && selectOdd(ev, team, type, odd, team === "home" ? ev.home : ev.away)}
+                                    style={{
+                                        width: 70, padding: "5px 4px", borderRadius: 4, border: on ? `1.5px solid ${isBack ? "#72bbef" : "#f994ba"}` : "1px solid transparent",
+                                        background: on ? (isBack ? "#3a8ad4" : "#d4537a") : (isBack ? "#72bbef" : "#f994ba"),
+                                        color: "#000", cursor: odd ? "pointer" : "not-allowed", opacity: odd ? 1 : 0.35,
+                                        transform: on ? "scale(0.94)" : "scale(1)", transition: "all 0.1s",
+                                        boxShadow: on ? `0 0 12px ${isBack ? "#72bbef44" : "#f994ba44"}` : "none"
+                                    }}>
+                                    <div style={{ fontSize: 9, opacity: 0.7 }}>{type}</div>
+                                    <div style={{ fontSize: 13, fontWeight: 900 }}>{odd ?? "—"}</div>
+                                </button>
+                            );
+                        };
+
+                        return (
+                            <React.Fragment key={ev.id}>
+                                <div style={{ borderBottom: "1px solid #14142a", background: isActive ? "rgba(255,255,255,0.015)" : "transparent" }}>
+                                    {/* Home row */}
+                                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 12px" }}>
+                                        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
+                                            <span className="live-dot" style={{ flexShrink: 0 }} />
+                                            <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: hWin ? "#fff" : "#b0b0cc", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.home}</span>
+                                            {hs && <span style={{ fontWeight: 900, fontSize: 13, color: hWin ? "#ffd700" : "#444466", flexShrink: 0 }}>{hs}</span>}
+                                        </div>
+                                        <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                                            <OddBtn team="home" type="Back" odd={o1} />
+                                            <OddBtn team="home" type="Lay" odd={o2} />
+                                        </div>
+                                    </div>
+                                    {/* Away row */}
+                                    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0px 12px 7px" }}>
+                                        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
+                                            <span style={{ width: 7, height: 7, flexShrink: 0 }} />
+                                            <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: aWin ? "#fff" : "#b0b0cc", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.away}</span>
+                                            {as_ && <span style={{ fontWeight: 900, fontSize: 13, color: aWin ? "#ffd700" : "#444466", flexShrink: 0 }}>{as_}</span>}
+                                        </div>
+                                        <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                                            <OddBtn team="away" type="Back" odd={o2} />
+                                            <OddBtn team="away" type="Lay" odd={o3} />
+                                        </div>
+                                    </div>
+                                    {/* Bottom bar: timer + More Markets */}
+                                    <div style={{ display: "flex", alignItems: "center", padding: "2px 12px 8px", gap: 8 }}>
+                                        {ev.timer && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: "#1e1e3a", color: "#e02020" }}>⏱ {ev.timer}'</span>}
+                                        {ev.ss && <span style={{ fontSize: 10, color: "#444466" }}>{ev.ss}</span>}
+                                        <MoreMarketsBtn id={ev.id} />
+                                    </div>
+                                </div>
+                                {/* Inline Bet Panel */}
+                                {isActive && <BetPanel bet={activeBet!} success={betOk} onChange={s => setActiveBet(p => p ? { ...p, stake: s } : null)} onClose={() => setActiveBet(null)} onPlace={placeBet} />}
+                            </React.Fragment>
+                        );
+                    })}
                 </div>
             ))}
 
-            {lastUpdated && !loading && matches.length > 0 && (
-                <div className="px-3 py-2 text-center text-[10px]" style={{ color: "#2a2a44" }}>
-                    Auto-refreshes every 30s · Last updated {lastUpdated.toLocaleTimeString()}
+            {lastUpdate && !loading && matches.length > 0 && (
+                <div style={{ textAlign: "center", fontSize: 10, color: "#2a2a44", padding: "8px 0" }}>
+                    Auto-refreshes every 30s · {lastUpdate.toLocaleTimeString()}
                 </div>
             )}
         </div>
     );
 }
 
-/* ─── Match Row ──────────────────────────────────────────────────────────── */
-function MatchRow({ ev, activeBet, onSelectOdd }: {
-    ev: Match;
-    activeBet: BetEntry | null;
-    onSelectOdd: (m: Match, team: string, type: "Back" | "Lay", odd: string) => void;
-}) {
+/* ── More Markets button (separate component avoids hook-in-loop) ── */
+function MoreMarketsBtn({ id }: { id: string }) {
     const router = useRouter();
-    const parts = ev.ss?.split("-").map(s => s.trim()) ?? [];
-    const hs = parts[0] ?? null;
-    const as_ = parts[1] ?? null;
-    const hWin = hs !== null && as_ !== null && Number(hs) > Number(as_);
-    const aWin = as_ !== null && hs !== null && Number(as_) > Number(hs);
-
-    // Build odds: we'll show Back (odd1) and Lay (odd2) for each team line
-    const odd1 = ev.odds[0]?.value ?? null;
-    const odd2 = ev.odds[1]?.value ?? null;
-    const odd3 = ev.odds[2]?.value ?? null;
-
-    const isBetActive = activeBet?.matchId === ev.id;
-
-    const OddBtn = ({ team, type, odd }: { team: string; type: "Back" | "Lay"; odd: string | null }) => {
-        const isActive = isBetActive && activeBet?.team === team && activeBet?.type === type;
-        const isBack = type === "Back";
-        return (
-            <button
-                onClick={() => odd && onSelectOdd(ev, team, type, odd)}
-                disabled={!odd}
-                className="flex-1 py-1.5 rounded text-center transition-all select-none"
-                style={{
-                    background: isActive
-                        ? (isBack ? "#3a8ad4" : "#d4537a")
-                        : (isBack ? "#72bbef" : "#f994ba"),
-                    color: "#000",
-                    opacity: odd ? 1 : 0.4,
-                    transform: isActive ? "scale(0.96)" : "scale(1)",
-                    boxShadow: isActive ? `0 0 12px ${isBack ? "#72bbef66" : "#f994ba66"}` : "none",
-                    border: isActive ? `1px solid ${isBack ? "#72bbef" : "#f994ba"}` : "1px solid transparent",
-                    minWidth: 58,
-                }}>
-                <div className="text-[9px] font-semibold leading-none" style={{ opacity: 0.7 }}>{type}</div>
-                <div className="text-sm font-black leading-tight">{odd ?? "—"}</div>
-            </button>
-        );
-    };
-
     return (
-        <div className="border-b" style={{ borderColor: "#14142a", background: isBetActive ? "rgba(255,255,255,0.02)" : "transparent" }}>
-            {/* Home row */}
-            <div className="flex items-center gap-2 px-3 py-2">
-                <div className="flex-1 flex items-center gap-2 min-w-0">
-                    <span className="live-dot flex-shrink-0" />
-                    <span className="text-sm font-semibold truncate" style={{ color: hWin ? "#fff" : "#bbbbd0" }}>{ev.home}</span>
-                    {hs !== null && <span className="ml-auto font-black text-sm flex-shrink-0 pl-2" style={{ color: hWin ? "#ffd700" : "#555578" }}>{hs}</span>}
-                </div>
-                <div className="hidden md:flex gap-1 flex-shrink-0">
-                    <OddBtn team="home" type="Back" odd={odd1} />
-                    <OddBtn team="home" type="Lay" odd={odd2} />
-                </div>
-                {/* Mobile: just one Back button */}
-                <div className="flex md:hidden gap-1 flex-shrink-0">
-                    <OddBtn team="home" type="Back" odd={odd1} />
-                </div>
-            </div>
-
-            {/* Away row */}
-            <div className="flex items-center gap-2 px-3 pb-2">
-                <div className="flex-1 flex items-center gap-2 min-w-0">
-                    <span className="w-[7px] h-[7px] flex-shrink-0" />
-                    <span className="text-sm font-semibold truncate" style={{ color: aWin ? "#fff" : "#bbbbd0" }}>{ev.away}</span>
-                    {as_ !== null && <span className="ml-auto font-black text-sm flex-shrink-0 pl-2" style={{ color: aWin ? "#ffd700" : "#555578" }}>{as_}</span>}
-                </div>
-                <div className="hidden md:flex gap-1 flex-shrink-0">
-                    <OddBtn team="away" type="Back" odd={odd2} />
-                    <OddBtn team="away" type="Lay" odd={odd3} />
-                </div>
-                {/* Mobile */}
-                <div className="flex md:hidden gap-1 flex-shrink-0">
-                    <OddBtn team="away" type="Back" odd={odd2} />
-                </div>
-            </div>
-
-            {/* Bottom bar: timer + more markets link */}
-            <div className="px-3 pb-2 flex items-center gap-2">
-                {ev.timer && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: "#1e1e3a", color: "#e02020" }}>
-                        ⏱ {ev.timer}&apos;
-                    </span>
-                )}
-                {ev.ss && <span className="text-[10px]" style={{ color: "#444466" }}>{ev.ss}</span>}
-                <button
-                    onClick={() => router.push(`/match/${encodeURIComponent(ev.id)}`)}
-                    className="ml-auto flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all"
-                    style={{ background: "#1e1e3a", color: "#7777aa", border: "1px solid #2a2a4a" }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#e02020"; e.currentTarget.style.color = "#fff"; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#2a2a4a"; e.currentTarget.style.color = "#7777aa"; }}
-                >
-                    More Markets <ChevronRight className="w-3 h-3" />
-                </button>
-            </div>
-        </div>
+        <button onClick={() => router.push(`/match/${encodeURIComponent(id)}`)}
+            style={{
+                marginLeft: "auto", display: "flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 600,
+                padding: "3px 10px", borderRadius: 20, background: "#1e1e3a", color: "#7777aa",
+                border: "1px solid #2a2a4a", cursor: "pointer", transition: "all 0.15s"
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "#e02020"; e.currentTarget.style.color = "#fff"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "#2a2a4a"; e.currentTarget.style.color = "#7777aa"; }}>
+            More Markets <ChevronRight size={12} />
+        </button>
     );
 }
 
-/* ─── Inline Bet Panel ───────────────────────────────────────────────────── */
-function InlineBetPanel({ bet, onStakeChange, onClose, onPlace, success }: {
-    bet: BetEntry;
-    onStakeChange: (v: string) => void;
-    onClose: () => void;
-    onPlace: () => void;
-    success: boolean;
+/* ── Inline Bet Panel ── */
+function BetPanel({ bet, success, onChange, onClose, onPlace }: {
+    bet: BetEntry; success: boolean;
+    onChange: (s: string) => void; onClose: () => void; onPlace: () => void;
 }) {
     const ref = useRef<HTMLInputElement>(null);
-    useEffect(() => { ref.current?.focus(); }, []);
+    useEffect(() => { setTimeout(() => ref.current?.focus(), 50); }, []);
 
-    const stakeNum = parseFloat(bet.stake) || 0;
-    const oddNum = parseFloat(bet.odd.replace(",", "")) || 0;
-    const profit = bet.type === "Back" ? stakeNum * (oddNum - 1) : stakeNum;
-    const liability = bet.type === "Lay" ? stakeNum * (oddNum - 1) : stakeNum;
+    const stake = parseFloat(bet.stake) || 0;
+    const odd = parseFloat(bet.odd) || 0;
     const isBack = bet.type === "Back";
+    const profit = isBack ? stake * (odd - 1) : stake;
+    const liab = !isBack ? stake * (odd - 1) : 0;
+    const color = isBack ? "#72bbef" : "#f994ba";
 
-    if (success) {
-        return (
-            <div className="flex items-center justify-center gap-3 py-4 px-4 animate-[fade-up_0.2s_ease]"
-                style={{ background: "rgba(46,204,113,0.08)", borderBottom: "1px solid #14142a" }}>
-                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "#2ecc71" }}>
-                    <Check className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                    <p className="text-sm font-bold" style={{ color: "#2ecc71" }}>Bet Placed Successfully!</p>
-                    <p className="text-xs" style={{ color: "#555578" }}>৳{stakeNum.toFixed(0)} on {bet.matchName}</p>
-                </div>
+    if (success) return (
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "rgba(46,204,113,0.08)", borderBottom: "1px solid #14142a" }}>
+            <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#2ecc71", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Check size={16} color="#fff" />
             </div>
-        );
-    }
+            <div>
+                <p style={{ color: "#2ecc71", fontWeight: 700, fontSize: 13 }}>Bet Placed!</p>
+                <p style={{ color: "#555578", fontSize: 11 }}>৳{stake.toFixed(0)} on {bet.teamName} @ {bet.odd}</p>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="px-3 py-3 animate-[fade-up_0.15s_ease]"
-            style={{ background: isBack ? "rgba(114,187,239,0.06)" : "rgba(249,148,186,0.06)", borderBottom: "2px solid", borderColor: isBack ? "#72bbef44" : "#f994ba44" }}>
-
+        <div style={{ padding: "12px 16px", background: isBack ? "rgba(114,187,239,0.06)" : "rgba(249,148,186,0.06)", borderBottom: `2px solid ${color}33` }}>
             {/* Header */}
-            <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded text-xs font-black" style={{ background: isBack ? "#72bbef" : "#f994ba", color: "#000" }}>
-                        {bet.type}
-                    </span>
-                    <span className="text-sm font-bold text-white">{bet.matchName}</span>
-                    <span className="text-base font-black" style={{ color: isBack ? "#72bbef" : "#f994ba" }}>@ {bet.odd}</span>
-                </div>
-                <button onClick={onClose} className="text-slate-600 hover:text-white transition-colors p-1">
-                    <X className="w-4 h-4" />
-                </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                <span style={{ padding: "2px 8px", borderRadius: 4, background: color, color: "#000", fontSize: 11, fontWeight: 900 }}>{bet.type}</span>
+                <span style={{ fontWeight: 700, color: "#fff", fontSize: 13, flex: 1 }}>{bet.teamName}</span>
+                <span style={{ fontWeight: 900, color, fontSize: 15 }}>@ {bet.odd}</span>
+                <button onClick={onClose} style={{ background: "none", border: "none", color: "#555578", cursor: "pointer" }}><X size={16} /></button>
             </div>
 
-            {/* Stake row */}
-            <div className="flex items-center gap-2 mb-2.5">
-                <span className="text-xs font-bold flex-shrink-0" style={{ color: "#7777aa" }}>Stake ৳</span>
-                <div className="flex items-center flex-1 rounded-lg overflow-hidden border" style={{ borderColor: isBack ? "#72bbef44" : "#f994ba44", background: "#0d0d1a" }}>
-                    <button onClick={() => onStakeChange(String(Math.max(0, stakeNum - 100)))}
-                        className="px-2.5 py-2 hover:bg-white/5 text-slate-400 hover:text-white transition-colors flex-shrink-0">
-                        <Minus className="w-3.5 h-3.5" />
-                    </button>
-                    <input ref={ref} type="number" min="0" step="100"
-                        value={bet.stake}
-                        onChange={e => onStakeChange(e.target.value)}
-                        placeholder="0"
-                        className="flex-1 bg-transparent text-center text-base font-black text-white outline-none py-2 w-0 min-w-0" />
-                    <button onClick={() => onStakeChange(String(stakeNum + 100))}
-                        className="px-2.5 py-2 hover:bg-white/5 text-slate-400 hover:text-white transition-colors flex-shrink-0">
-                        <Plus className="w-3.5 h-3.5" />
-                    </button>
+            {/* Stake input */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#7777aa", flexShrink: 0 }}>Stake ৳</span>
+                <div style={{ flex: 1, display: "flex", alignItems: "center", borderRadius: 8, overflow: "hidden", border: `1px solid ${color}33`, background: "#0d0d1a" }}>
+                    <button onClick={() => onChange(String(Math.max(0, stake - 100)))} style={{ padding: "8px 10px", background: "none", border: "none", color: "#7777aa", cursor: "pointer" }}><Minus size={14} /></button>
+                    <input ref={ref} type="number" min="0" step="100" value={bet.stake} placeholder="0" onChange={e => onChange(e.target.value)}
+                        style={{ flex: 1, background: "none", border: "none", outline: "none", textAlign: "center", fontWeight: 900, fontSize: 16, color: "#fff", padding: "8px 0" }} />
+                    <button onClick={() => onChange(String(stake + 100))} style={{ padding: "8px 10px", background: "none", border: "none", color: "#7777aa", cursor: "pointer" }}><Plus size={14} /></button>
                 </div>
             </div>
 
             {/* Quick stake chips */}
-            <div className="flex gap-1.5 flex-wrap mb-3">
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
                 {[100, 200, 500, 1000, 2000, 5000].map(v => (
-                    <button key={v} onClick={() => onStakeChange(String(stakeNum + v))}
-                        className="px-2.5 py-1 rounded-full text-xs font-bold transition-all"
-                        style={{ background: "#1e1e3a", color: "#9999bb", border: "1px solid #2a2a4a" }}
-                        onMouseEnter={e => (e.currentTarget.style.borderColor = isBack ? "#72bbef" : "#f994ba")}
-                        onMouseLeave={e => (e.currentTarget.style.borderColor = "#2a2a4a")}>
-                        +{v >= 1000 ? `${v / 1000}k` : v}
+                    <button key={v} onClick={() => onChange(String(stake + v))}
+                        style={{ padding: "4px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: "#1e1e3a", color: "#9999bb", border: "1px solid #2a2a4a", cursor: "pointer" }}>
+                        +{v >= 1000 ? v / 1000 + "k" : v}
                     </button>
                 ))}
-                <button onClick={() => onStakeChange("")}
-                    className="px-2.5 py-1 rounded-full text-xs font-bold transition-all"
-                    style={{ background: "#1e1e3a", color: "#555578", border: "1px solid #2a2a4a" }}>
-                    Clear
-                </button>
+                <button onClick={() => onChange("")} style={{ padding: "4px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: "#1e1e3a", color: "#555578", border: "1px solid #2a2a4a", cursor: "pointer" }}>Clear</button>
             </div>
 
-            {/* Returns summary */}
-            {stakeNum > 0 && (
-                <div className="rounded-lg p-2.5 mb-3 grid grid-cols-2 gap-2" style={{ background: "#0d0d1a" }}>
-                    <div>
-                        <p className="text-[10px]" style={{ color: "#444466" }}>Stake</p>
-                        <p className="text-sm font-black text-white">৳{stakeNum.toFixed(0)}</p>
-                    </div>
-                    <div>
-                        <p className="text-[10px]" style={{ color: "#444466" }}>{isBack ? "Potential Profit" : "Potential Return"}</p>
-                        <p className="text-sm font-black" style={{ color: "#2ecc71" }}>৳{profit.toFixed(2)}</p>
-                    </div>
-                    {!isBack && (
-                        <div className="col-span-2">
-                            <p className="text-[10px]" style={{ color: "#e02020" }}>Liability (you owe if loses): ৳{liability.toFixed(2)}</p>
-                        </div>
-                    )}
+            {/* Returns */}
+            {stake > 0 && (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, background: "#0d0d1a", borderRadius: 8, padding: 10, marginBottom: 10 }}>
+                    <div><p style={{ fontSize: 10, color: "#444466" }}>Stake</p><p style={{ fontSize: 14, fontWeight: 900, color: "#fff" }}>৳{stake.toFixed(0)}</p></div>
+                    <div><p style={{ fontSize: 10, color: "#444466" }}>{isBack ? "Profit" : "Return"}</p><p style={{ fontSize: 14, fontWeight: 900, color: "#2ecc71" }}>৳{profit.toFixed(2)}</p></div>
+                    {!isBack && <div style={{ gridColumn: "1/-1" }}><p style={{ fontSize: 10, color: "#e02020" }}>Liability: ৳{liab.toFixed(2)}</p></div>}
                 </div>
             )}
 
-            {/* Place Bet button */}
-            <button
-                onClick={handlePlaceBetClick}
-                disabled={stakeNum <= 0}
-                className="w-full py-2.5 rounded-lg font-black text-sm transition-all"
+            {/* Place bet button */}
+            <button onClick={() => stake > 0 && onPlace()}
                 style={{
-                    background: stakeNum > 0 ? (isBack ? "#005bb5" : "#b5005b") : "#1e1e3a",
-                    color: stakeNum > 0 ? "#fff" : "#444466",
-                    cursor: stakeNum > 0 ? "pointer" : "not-allowed",
+                    width: "100%", padding: "11px 0", borderRadius: 8, border: "none", fontWeight: 900, fontSize: 13, cursor: stake > 0 ? "pointer" : "not-allowed",
+                    background: stake > 0 ? (isBack ? "#005bb5" : "#8b0055") : "#1e1e3a",
+                    color: stake > 0 ? "#fff" : "#444466", transition: "all 0.15s"
                 }}>
-                {stakeNum > 0
-                    ? `Place ${bet.type} ৳${stakeNum.toFixed(0)} @ ${bet.odd}`
-                    : "Enter stake to place bet"}
+                {stake > 0 ? `Place ${bet.type} ৳${stake.toFixed(0)} @ ${bet.odd}` : "Enter stake to continue"}
             </button>
         </div>
     );
-
-    function handlePlaceBetClick() { if (stakeNum > 0) onPlace(); }
 }

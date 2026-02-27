@@ -1,116 +1,120 @@
 "use client";
 import React, { useState } from "react";
-import { Search, Menu, X, ChevronDown, Star, Tv, Bell } from "lucide-react";
+import { Search, Menu, X } from "lucide-react";
 
 const NAV_LINKS = [
-    { label: "Home", href: "/" },
-    { label: "In-Play", href: "/?tab=inplay", live: true },
-    { label: "Cricket", href: "/?sport=3" },
-    { label: "Soccer", href: "/?sport=1" },
-    { label: "Tennis", href: "/?sport=13" },
-    { label: "Basketball", href: "/?sport=18" },
-    { label: "Casino", href: "#" },
+    { label: "Home", href: "/", icon: "🏠" },
+    { label: "In-Play", href: "/", icon: "🔴", live: true },
+    { label: "Cricket", href: "/?sport=3", icon: "🏏" },
+    { label: "Soccer", href: "/?sport=1", icon: "⚽" },
+    { label: "Tennis", href: "/?sport=13", icon: "🎾" },
+    { label: "Basketball", href: "/?sport=18", icon: "🏀" },
+    { label: "Casino", href: "#", icon: "🎰" },
+    { label: "Slots", href: "#", icon: "🃏" },
 ];
 
 export default function Navbar({ onLoginClick }: { onLoginClick?: () => void }) {
-    const [mobileOpen, setMobileOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
 
     return (
         <>
-            {/* ── Top Bar ─────────────────────────────────────── */}
+            {/* ── Sticky wrapper ── */}
             <div className="sticky top-0 z-50">
+
+                {/* TOP BAR */}
                 <div style={{ background: "linear-gradient(135deg, #1a1a3e 0%, #0d0d2a 100%)", borderBottom: "1px solid #2a2a4a" }}>
-                    <div className="max-w-[1400px] mx-auto px-3 h-14 flex items-center gap-3">
-                        {/* Mobile hamburger */}
-                        <button className="lg:hidden text-slate-400 hover:text-white" onClick={() => setMobileOpen(true)}>
-                            <Menu className="w-5 h-5" />
+                    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 12px", height: 56, display: "flex", alignItems: "center", gap: 12 }}>
+
+                        {/* Hamburger (mobile) */}
+                        <button onClick={() => setMenuOpen(true)} style={{ display: "flex", color: "#9999bb", background: "none", border: "none", cursor: "pointer" }} className="lg:hidden">
+                            <Menu size={20} />
                         </button>
 
                         {/* Logo */}
-                        <a href="/" className="flex items-center gap-2 flex-shrink-0">
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-sm" style={{ background: "#e02020" }}>P</div>
-                            <span className="hidden sm:block font-black text-white text-lg tracking-tight">
+                        <a href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", flexShrink: 0 }}>
+                            <div style={{ width: 32, height: 32, borderRadius: 8, background: "#e02020", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, color: "#fff", fontSize: 14 }}>P</div>
+                            <span style={{ fontWeight: 900, color: "#fff", fontSize: 18, letterSpacing: -0.5, display: "none" }} className="sm:!inline">
                                 Play<span style={{ color: "#ffd700" }}>Baji</span>
                             </span>
                         </a>
 
-                        {/* Live count chips */}
-                        <div className="hidden md:flex items-center gap-1.5 ml-2">
-                            {[{ label: "🏏", count: 4 }, { label: "⚽", count: 32 }, { label: "🎾", count: 11 }].map(({ label, count }) => (
-                                <div key={label} style={{ background: "#e02020", borderRadius: 4 }} className="flex items-center gap-1 px-2 py-0.5 text-white text-xs font-bold">
-                                    {label} {count}
-                                </div>
-                            ))}
-                        </div>
-
                         {/* Spacer */}
-                        <div className="flex-1" />
+                        <div style={{ flex: 1 }} />
 
                         {/* Search */}
                         {searchOpen ? (
-                            <div className="flex items-center bg-[#0d0d2a] border border-[#2a2a4a] rounded-lg px-3 h-9 gap-2 w-52">
-                                <Search className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
-                                <input autoFocus placeholder="Search matches..." className="bg-transparent text-sm text-white placeholder:text-slate-600 outline-none flex-1 w-full" onBlur={() => setSearchOpen(false)} />
+                            <div style={{ display: "flex", alignItems: "center", background: "#0d0d1a", border: "1px solid #2a2a4a", borderRadius: 8, padding: "0 10px", height: 36, gap: 8, width: 200 }}>
+                                <Search size={14} color="#555578" />
+                                <input autoFocus onBlur={() => setSearchOpen(false)} placeholder="Search matches…"
+                                    style={{ background: "none", border: "none", outline: "none", color: "#fff", fontSize: 13, width: "100%" }} />
                             </div>
                         ) : (
-                            <button onClick={() => setSearchOpen(true)} className="hidden sm:flex text-slate-400 hover:text-white p-2 rounded-lg hover:bg-white/5">
-                                <Search className="w-4 h-4" />
+                            <button onClick={() => setSearchOpen(true)} style={{ background: "none", border: "none", color: "#9999bb", cursor: "pointer", padding: 6, display: "none" }} className="sm:!flex">
+                                <Search size={16} />
                             </button>
                         )}
 
-                        {/* Auth */}
-                        <div className="flex items-center gap-2">
-                            <button onClick={onLoginClick} className="px-3 py-1.5 text-sm font-semibold text-white border border-[#3a3a5a] rounded-lg hover:border-slate-400 transition-all">
-                                Login
-                            </button>
-                            <button onClick={onLoginClick} className="px-3 py-1.5 text-sm font-bold text-white rounded-lg transition-all" style={{ background: "#e02020" }}
-                                onMouseEnter={e => (e.currentTarget.style.background = "#c01818")}
-                                onMouseLeave={e => (e.currentTarget.style.background = "#e02020")}>
-                                Register
-                            </button>
-                        </div>
+                        {/* Auth buttons */}
+                        <button onClick={onLoginClick}
+                            style={{ padding: "6px 14px", background: "none", border: "1px solid #3a3a5a", borderRadius: 8, color: "#fff", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
+                            Login
+                        </button>
+                        <button onClick={onLoginClick}
+                            style={{ padding: "6px 14px", background: "#e02020", border: "none", borderRadius: 8, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                            Register
+                        </button>
                     </div>
                 </div>
 
-                {/* ── Nav Strip ─────────────────────────────────── */}
-                <div style={{ background: "#0d0d1a", borderBottom: "2px solid #e02020" }}>
-                    <div className="max-w-[1400px] mx-auto px-3 flex items-center gap-0 overflow-x-auto scrollbar-hide">
-                        {NAV_LINKS.map(({ label, href, live }) => (
+                {/* NAV STRIP */}
+                <div style={{ background: "#0d0d1a", borderBottom: "2px solid #e02020", overflowX: "auto" }}>
+                    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "0 8px", display: "flex", alignItems: "center" }}>
+                        {NAV_LINKS.map(({ label, href, icon, live }) => (
                             <a key={label} href={href}
-                                className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 border-transparent hover:border-yellow-400 hover:text-yellow-400 transition-all"
-                                style={{ color: "#9999bb" }}>
+                                style={{
+                                    display: "flex", alignItems: "center", gap: 5,
+                                    padding: "10px 14px", textDecoration: "none",
+                                    fontSize: 13, fontWeight: 600, color: "#9999bb",
+                                    borderBottom: "2px solid transparent",
+                                    whiteSpace: "nowrap", flexShrink: 0, transition: "color 0.15s",
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.color = "#ffd700"; e.currentTarget.style.borderBottomColor = "#ffd700"; }}
+                                onMouseLeave={e => { e.currentTarget.style.color = "#9999bb"; e.currentTarget.style.borderBottomColor = "transparent"; }}
+                            >
                                 {live && <span className="live-dot" />}
-                                {label}
+                                <span>{icon}</span>
+                                <span>{label}</span>
                             </a>
                         ))}
                     </div>
                 </div>
             </div>
 
-            {/* ── Mobile Drawer ──────────────────────────────────── */}
-            {mobileOpen && (
-                <div className="fixed inset-0 z-[200] lg:hidden">
-                    <div className="absolute inset-0 bg-black/70" onClick={() => setMobileOpen(false)} />
-                    <div className="absolute left-0 top-0 bottom-0 w-72 flex flex-col animate-[slide-in_0.2s_ease]"
-                        style={{ background: "linear-gradient(180deg, #1a1a3e 0%, #0d0d2a 100%)", borderRight: "1px solid #2a2a4a" }}>
-                        <div className="flex items-center justify-between px-4 h-14" style={{ borderBottom: "1px solid #2a2a4a" }}>
-                            <span className="font-black text-white text-lg">Play<span style={{ color: "#ffd700" }}>Baji</span></span>
-                            <button onClick={() => setMobileOpen(false)} className="text-slate-500 hover:text-white"><X className="w-5 h-5" /></button>
+            {/* MOBILE DRAWER */}
+            {menuOpen && (
+                <div style={{ position: "fixed", inset: 0, zIndex: 300 }} className="lg:hidden">
+                    <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.75)" }} onClick={() => setMenuOpen(false)} />
+                    <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 280, background: "linear-gradient(180deg,#1a1a3e 0%,#0d0d2a 100%)", borderRight: "1px solid #2a2a4a", display: "flex", flexDirection: "column" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", height: 56, borderBottom: "1px solid #2a2a4a" }}>
+                            <span style={{ fontWeight: 900, color: "#fff", fontSize: 18 }}>Play<span style={{ color: "#ffd700" }}>Baji</span></span>
+                            <button onClick={() => setMenuOpen(false)} style={{ background: "none", border: "none", color: "#9999bb", cursor: "pointer" }}><X size={20} /></button>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-3 space-y-1">
-                            {NAV_LINKS.map(({ label, href, live }) => (
-                                <a key={label} href={href} onClick={() => setMobileOpen(false)}
-                                    className="flex items-center gap-2.5 px-3 py-3 rounded-lg text-sm font-semibold hover:bg-white/5 transition-colors"
-                                    style={{ color: "#9999bb" }}>
+                        <div style={{ flex: 1, overflowY: "auto", padding: 12 }}>
+                            {NAV_LINKS.map(({ label, href, icon, live }) => (
+                                <a key={label} href={href} onClick={() => setMenuOpen(false)}
+                                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 12px", borderRadius: 10, textDecoration: "none", color: "#9999bb", fontSize: 14, fontWeight: 600, marginBottom: 2 }}>
                                     {live && <span className="live-dot" />}
+                                    <span style={{ fontSize: 18 }}>{icon}</span>
                                     {label}
                                 </a>
                             ))}
                         </div>
-                        <div className="p-3 space-y-2" style={{ borderTop: "1px solid #2a2a4a" }}>
-                            <button className="w-full py-2.5 border border-[#3a3a5a] rounded-lg text-sm font-semibold text-white">Login</button>
-                            <button className="w-full py-2.5 rounded-lg text-sm font-bold text-white" style={{ background: "#e02020" }}>Register</button>
+                        <div style={{ padding: 12, borderTop: "1px solid #2a2a4a", display: "flex", flexDirection: "column", gap: 8 }}>
+                            <button onClick={() => { onLoginClick?.(); setMenuOpen(false); }}
+                                style={{ padding: "10px", border: "1px solid #3a3a5a", borderRadius: 10, color: "#fff", fontWeight: 600, fontSize: 13, background: "none", cursor: "pointer" }}>Login</button>
+                            <button onClick={() => { onLoginClick?.(); setMenuOpen(false); }}
+                                style={{ padding: "10px", background: "#e02020", border: "none", borderRadius: 10, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>Register</button>
                         </div>
                     </div>
                 </div>

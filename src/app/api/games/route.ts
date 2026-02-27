@@ -2,99 +2,81 @@ import { NextRequest, NextResponse } from "next/server";
 
 const TOKEN = "244037-F9qXV8p5Cv2Dd3";
 
-// Detect BetsAPI sport_id from competition/league name
-function detectSportId(ctName: string): number {
-    const n = (ctName || "").toLowerCase();
+// BetsAPI sport IDs embedded in event ID (pattern: C<id>A)
+// Maps BetsAPI's internal sport number → our app sport_id
+const BETS_SPORT_MAP: Record<number, number> = {
+    1: 1,   // Soccer
+    3: 3,   // Cricket
+    13: 13,  // Tennis
+    17: 4,   // Ice Hockey (BetsAPI=17, our UI uses 4)
+    18: 18,  // Basketball
+    12: 12,  // American Football
+};
 
-    // Cricket — must check before soccer to avoid false matches
-    if (n.includes("ipl") || n.includes("bpl") || n.includes("psl") || n.includes("cpl") ||
-        n.includes("t20") || n.includes("odi") || n.includes("test match") ||
-        n.includes("county") || n.includes("cricket") || n.includes("ashes") ||
-        n.includes("bbл") || n.includes("ranji") || n.includes("syed mushtaq"))
-        return 3;
+// Sport IDs to include in "All Sports" view
+const INCLUDED_SPORTS = new Set([1, 3, 13, 17, 18, 12]);
 
-    // Tennis
-    if (n.includes("atp") || n.includes("wta") || n.includes("itf") ||
-        n.includes("davis cup") || n.includes("fed cup") || n.includes("grand slam") ||
-        n.includes("wimbledon") || n.includes("us open") || n.includes("roland garros") ||
-        n.includes("australian open") || n.includes("tennis"))
-        return 13;
+// League names to always skip (esports, virtual, golf outrights, etc.)
+const SKIP_NAME_PATTERNS = [
+    "esoccer", "ebasketball", "cs2", "valorant", "virtual",
+    "sports based games", "hsbc", "golf", "tt elite", "call of duty",
+];
 
-    // Basketball
-    if (n.includes("nba") || n.includes("ncaa basketball") || n.includes("euroleague") ||
-        n.includes("eurocup") || n.includes("nbl") || n.includes("basketball"))
-        return 18;
+function extractBetsApiSport(id: string): number | null {
+    const m = id?.match(/C(\d+)A/);
+    return m ? parseInt(m[1], 10) : null;
+}
 
-    // American Football
-    if (n.includes("nfl") || n.includes("ncaa football") || n.includes("american football") ||
-        n.includes("cfl"))
-        return 12;
-
-    // Ice Hockey
-    if (n.includes("nhl") || n.includes("khl") || n.includes("ahl") || n.includes("shl") ||
-        n.includes("hockey") || n.includes("ice"))
-        return 4;
-
-    // Default: Soccer (most common)
-    return 1;
+function shouldSkipLeague(league: string): boolean {
+    const l = league.toLowerCase();
+    return SKIP_NAME_PATTERNS.some(p => l.includes(p));
 }
 
 function parseBet365Stream(items: any[]): any[] {
     const events: any[] = [];
-    let currentSportId = 1;
     let currentLeague = "Unknown League";
-    let currentEV: any = null;
-    let currentMA: any = null;
 
     for (const item of items) {
         if (!item?.type) continue;
 
         if (item.type === "CT") {
-            currentSportId = detectSportId(item.NA || "");
             currentLeague = item.NA || "Unknown League";
-            currentEV = null;
-            currentMA = null;
         } else if (item.type === "EV") {
-            const name = item.NA || "";
-            const leagueLower = currentLeague.toLowerCase();
-            const nameLower = name.toLowerCase();
+            const id = item.ID || item.FI || "";
+            const betsApiSport = extractBetsApiSport(id);
 
-            // Skip virtual/esports
-            const isVirtual = item.VI === "1" ||
-                leagueLower.includes("esoccer") ||
-                leagueLower.includes("ebasketball") ||
-                leagueLower.includes("virtual") ||
-                nameLower.includes("esoccer");
+            // Skip if sport not identifiable or not a sport we handle
+            if (!betsApiSport || !INCLUDED_SPORTS.has(betsApiSport)) continue;
 
-            if (isVirtual) { currentEV = null; continue; }
+            // Skip virtual/esports by league name
+            if (shouldSkipLeague(currentLeague)) continue;
 
-            const parts = name.split(/\s+v(?:s)?\s+/i);
-            const home = parts[0]?.trim() || "Home";
-            const away = parts[1]?.trim() || "Away";
+            const appSportId = BETS_SPORT_MAP[betsApiSport] ?? betsApiSport;
 
-            currentEV = {
-                id: item.ID || item.FI,
-                sport_id: String(currentSportId),
+            const nameParts = (item.NA || "").split(/\s+v(?:s)?\s+/i);
+            const home = nameParts[0]?.trim() || item.NA || "Home";
+            const away = nameParts[1]?.trim() || "Away";
+
+            events.push({
+                id,
+                sport_id: String(appSportId),
                 league: currentLeague,
                 home,
                 away,
-                name,
+                name: item.NA || `${home} vs ${away}`,
                 ss: item.SS || null,
                 timer: item.TM || null,
                 time_status: "1",
                 odds: [],
-            };
-            events.push(currentEV);
-            currentMA = null;
-        } else if (item.type === "MA" && currentEV) {
-            currentMA = item;
-        } else if (item.type === "PA" && currentEV && currentMA) {
-            // Collect 1X2 match result odds
-            const maName = (currentMA.NA || "").toLowerCase();
-            if (maName.includes("match result") || maName.includes("1x2") ||
-                maName.includes("match winner") || maName.includes("moneyline")) {
-                const pos = item.OR === "0" ? "1" : item.OR === "1" ? "X" : "2";
-                currentEV.odds.push({ name: pos, value: item.OD });
+            });
+        } else if (item.type === "PA") {
+            // Attach odds to last event
+            if (events.length > 0) {
+                const last = events[events.length - 1];
+                if (last.odds.length < 3) {
+                    const label = item.OR === "0" ? "1" : item.OR === "1" ? "X" : "2";
+                    if (item.OD) last.odds.push({ name: label, value: item.OD });
+                }
             }
         }
     }
@@ -105,23 +87,24 @@ function parseBet365Stream(items: any[]): any[] {
 export async function GET(req: NextRequest) {
     const { searchParams } = req.nextUrl;
     const sportIdParam = searchParams.get("sportId");
-    const tab = searchParams.get("tab") || "inplay";
-    const requestedSportId = sportIdParam ? parseInt(sportIdParam, 10) : null;
+    // tab param kept for future upcoming endpoint
+    // const tab = searchParams.get("tab") || "inplay";
+
+    const requestedAppSport = sportIdParam ? parseInt(sportIdParam, 10) : null;
 
     try {
-        // Fetch the full Bet365 inplay stream
         const resp = await fetch(
             `https://api.betsapi.com/v1/bet365/inplay?token=${TOKEN}`,
-            { next: { revalidate: 30 } }
+            { next: { revalidate: 25 } }
         );
 
         if (!resp.ok) {
-            return NextResponse.json({ success: false, error: `API ${resp.status}`, results: [] });
+            return NextResponse.json({ success: false, error: `BetsAPI ${resp.status}`, results: [] });
         }
 
         const data = await resp.json();
         if (data?.success !== 1) {
-            return NextResponse.json({ success: false, error: "API returned failure", results: [] });
+            return NextResponse.json({ success: false, error: "BetsAPI failure", results: [] });
         }
 
         const rawItems: any[] = Array.isArray(data.results?.[0])
@@ -130,9 +113,9 @@ export async function GET(req: NextRequest) {
 
         let events = parseBet365Stream(rawItems);
 
-        // Filter by sport if requested
-        if (requestedSportId !== null) {
-            events = events.filter(ev => ev.sport_id === String(requestedSportId));
+        // Filter by sport if specified
+        if (requestedAppSport !== null) {
+            events = events.filter(ev => ev.sport_id === String(requestedAppSport));
         }
 
         return NextResponse.json({
@@ -140,7 +123,7 @@ export async function GET(req: NextRequest) {
             results: events,
             count: events.length,
             timestamp: new Date().toISOString(),
-            source: "bet365-inplay",
+            source: "bet365-v2",
         });
     } catch (err: any) {
         return NextResponse.json({ success: false, error: err.message, results: [] }, { status: 500 });

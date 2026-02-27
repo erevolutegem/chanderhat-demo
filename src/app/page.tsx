@@ -4,14 +4,11 @@ import React, { useState, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import LeftSidebar from "@/components/LeftSidebar";
 import MatchList from "@/components/MatchList";
-import type { Match } from "@/components/MatchList";
 import BetSlip from "@/components/BetSlip";
-import type { BetSelection } from "@/components/BetSlip";
 import HeroSection from "@/components/HeroSection";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import AuthModal from "@/components/AuthModal";
 
-// Mobile sport selector -- horizontal scroll tabs
 const SPORT_TABS = [
   { id: undefined, icon: "⚡", label: "All" },
   { id: 3, icon: "🏏", label: "Cricket" },
@@ -25,34 +22,10 @@ const SPORT_TABS = [
 export default function Home() {
   const [selectedSport, setSelectedSport] = useState<number | undefined>(undefined);
   const [matchCounts, setMatchCounts] = useState<Record<string, number>>({});
-  const [bets, setBets] = useState<BetSelection[]>([]);
   const [authOpen, setAuthOpen] = useState(false);
-  const [mobileSlipOpen, setMobileSlipOpen] = useState(false);
 
   const handleCountChange = useCallback((counts: Record<string, number>) => {
     setMatchCounts(counts);
-  }, []);
-
-  const handleAddBet = useCallback((match: Match, selection: string, odd: string) => {
-    setBets(prev => {
-      const exists = prev.find(b => b.matchId === match.id);
-      if (exists) return prev.filter(b => b.matchId !== match.id);
-      return [...prev, {
-        matchId: match.id,
-        matchName: `${match.home} v ${match.away}`,
-        selection,
-        odd,
-        stake: "",
-      }];
-    });
-  }, []);
-
-  const handleRemoveBet = useCallback((matchId: string) => {
-    setBets(prev => prev.filter(b => b.matchId !== matchId));
-  }, []);
-
-  const handleStakeChange = useCallback((matchId: string, stake: string) => {
-    setBets(prev => prev.map(b => b.matchId === matchId ? { ...b, stake } : b));
   }, []);
 
   return (
@@ -62,7 +35,8 @@ export default function Home() {
         <HeroSection />
 
         {/* Mobile Sport Tabs */}
-        <div className="lg:hidden flex overflow-x-auto scrollbar-hide px-2 py-2 gap-1.5" style={{ background: "#12122a", borderBottom: "1px solid #2a2a4a" }}>
+        <div className="lg:hidden flex overflow-x-auto scrollbar-hide px-2 py-2 gap-1.5"
+          style={{ background: "#12122a", borderBottom: "1px solid #2a2a4a" }}>
           {SPORT_TABS.map(s => (
             <button key={String(s.id)}
               onClick={() => setSelectedSport(s.id)}
@@ -74,8 +48,9 @@ export default function Home() {
               }}>
               <span>{s.icon}</span>
               <span>{s.label}</span>
-              {s.id !== undefined && matchCounts[String(s.id)] > 0 && (
-                <span className="text-[10px] font-black px-1 rounded-full" style={{ background: "rgba(255,255,255,0.2)" }}>
+              {s.id !== undefined && (matchCounts[String(s.id)] ?? 0) > 0 && (
+                <span className="text-[10px] font-black px-1 rounded-full"
+                  style={{ background: "rgba(255,255,255,0.2)" }}>
                   {matchCounts[String(s.id)]}
                 </span>
               )}
@@ -93,39 +68,14 @@ export default function Home() {
           <MatchList
             sportId={selectedSport}
             onCountChange={handleCountChange}
-            onAddToBetSlip={handleAddBet}
           />
-          <BetSlip
-            bets={bets}
-            onRemove={handleRemoveBet}
-            onStakeChange={handleStakeChange}
-            onClear={() => setBets([])}
-          />
+          <BetSlip bets={[]} onRemove={() => { }} onStakeChange={() => { }} onClear={() => { }} />
         </div>
       </div>
 
-      {/* Mobile Bet Slip overlay */}
-      {mobileSlipOpen && (
-        <div className="fixed inset-0 z-[150] lg:hidden flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/70" onClick={() => setMobileSlipOpen(false)} />
-          <div className="relative rounded-t-2xl overflow-hidden max-h-[80vh] overflow-y-auto" style={{ background: "#12122a" }}>
-            <div className="p-3" style={{ borderBottom: "1px solid #2a2a4a" }}>
-              <div className="w-10 h-1 rounded-full mx-auto mb-3" style={{ background: "#2a2a4a" }} />
-            </div>
-            <BetSlip
-              bets={bets}
-              onRemove={handleRemoveBet}
-              onStakeChange={handleStakeChange}
-              onClear={() => { setBets([]); setMobileSlipOpen(false); }}
-            />
-          </div>
-        </div>
-      )}
-
       <MobileBottomNav
-        betCount={bets.length}
+        betCount={0}
         onLoginClick={() => setAuthOpen(true)}
-        onBetSlipClick={() => setMobileSlipOpen(true)}
       />
 
       <AuthModal

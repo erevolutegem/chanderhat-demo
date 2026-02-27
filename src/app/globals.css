@@ -1,97 +1,206 @@
-@import "tailwindcss";
-
-@theme {
-  /* Brand Colors */
-  --color-primary: #1a1f2e;
-  --color-surface: #242938;
-  --color-surface-2: #2d3348;
-  --color-border: #353c52;
-  --color-green: #16a34a;
-  --color-green-light: #22c55e;
-  --color-red: #dc2626;
-  --color-yellow: #f59e0b;
-  --color-blue: #3b82f6;
-
-  /* Legacy compat */
-  --color-primary-dark: #1a1f2e;
-  --color-secondary-dark: #242938;
-  --color-accent-red: #dc2626;
-  --color-accent-yellow: #f59e0b;
-  --color-bkash: #e2136e;
-  --color-nagad: #f7941d;
-  --color-rocket: #8c3494;
-
-  @keyframes pulse-dot {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-  @keyframes slide-up {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  --background: #0f1219;
-  --foreground: #f0f0f0;
+  /* Playbaji color palette */
+  --pb-bg: #1a1a2e;
+  --pb-surface: #16213e;
+  --pb-surface-2: #0f3460;
+  --pb-header: #1a1a2e;
+  --pb-header-bottom: #0d0d1a;
+  --pb-sidebar: #12122a;
+  --pb-card: #1e1e3a;
+  --pb-border: #2a2a4a;
+  --pb-border-light: #333360;
+
+  --pb-primary: #e02020;
+  --pb-primary-hover: #c01818;
+  --pb-accent: #ffd700;
+  --pb-accent-2: #00c4ff;
+
+  --pb-back: #72bbef;
+  /* Blue odds Back */
+  --pb-lay: #f994ba;
+  /* Pink odds Lay */
+  --pb-back-hover: #5aa8df;
+  --pb-lay-hover: #e87ba8;
+
+  --pb-live: #e02020;
+  --pb-live-glow: rgba(224, 32, 32, 0.35);
+  --pb-green: #2ecc71;
+  --pb-yellow: #ffd700;
+
+  --pb-text: #e8e8f0;
+  --pb-text-muted: #8888aa;
+  --pb-text-dim: #555578;
+
+  --pb-radius: 6px;
+  --pb-radius-sm: 4px;
+  --pb-radius-lg: 10px;
 }
 
-html { scroll-behavior: smooth; }
-
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: 'Inter', sans-serif;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--pb-bg);
+  color: var(--pb-text);
+  min-height: 100vh;
+  line-height: 1.5;
+  font-size: 14px;
   -webkit-font-smoothing: antialiased;
 }
 
-* { box-sizing: border-box; }
+/* ── Scrollbars ──────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
 
-@layer utilities {
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .scrollbar-hide::-webkit-scrollbar { display: none; }
+::-webkit-scrollbar-track {
+  background: var(--pb-bg);
+}
 
-  .card {
-    background: #1e2433;
-    border: 1px solid #2d3348;
-    border-radius: 12px;
-  }
+::-webkit-scrollbar-thumb {
+  background: var(--pb-border);
+  border-radius: 3px;
+}
 
-  .btn-primary {
-    background: #16a34a;
-    color: white;
-    font-weight: 700;
-    border-radius: 8px;
-    transition: all 0.15s;
-    cursor: pointer;
-  }
-  .btn-primary:hover { background: #15803d; transform: translateY(-1px); }
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pb-border-light);
+}
 
-  .btn-outline {
-    border: 1px solid #2d3348;
-    color: #94a3b8;
-    font-weight: 600;
-    border-radius: 8px;
-    transition: all 0.15s;
-    cursor: pointer;
-    background: transparent;
-  }
-  .btn-outline:hover { border-color: #16a34a; color: #22c55e; }
+/* ── Utilities ───────────────────────────────────────────── */
+.scrollbar-hide {
+  scrollbar-width: none;
+}
 
-  .live-dot {
-    width: 6px;
-    height: 6px;
-    background: #ef4444;
-    border-radius: 50%;
-    animation: pulse-dot 1.2s ease-in-out infinite;
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Animations ──────────────────────────────────────────── */
+@keyframes pulse-live {
+
+  0%,
+  100% {
+    opacity: 1;
   }
 
-  .animate-slide-up {
-    animation: slide-up 0.2s ease-out;
+  50% {
+    opacity: 0.4;
   }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ── Skeleton Loaders ────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, var(--pb-surface) 25%, var(--pb-border) 50%, var(--pb-surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--pb-radius-sm);
+}
+
+/* ── Bet Button (Back / Lay) ─────────────────────────────── */
+.btn-back {
+  background: var(--pb-back);
+  color: #000;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--pb-radius-sm);
+  cursor: pointer;
+  padding: 6px 10px;
+  transition: background 0.15s;
+  text-align: center;
+  font-size: 12px;
+  min-width: 62px;
+}
+
+.btn-back:hover {
+  background: var(--pb-back-hover);
+}
+
+.btn-lay {
+  background: var(--pb-lay);
+  color: #000;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--pb-radius-sm);
+  cursor: pointer;
+  padding: 6px 10px;
+  transition: background 0.15s;
+  text-align: center;
+  font-size: 12px;
+  min-width: 62px;
+}
+
+.btn-lay:hover {
+  background: var(--pb-lay-hover);
+}
+
+/* ── Live dot ────────────────────────────────────────────── */
+.live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pb-live);
+  box-shadow: 0 0 6px var(--pb-live-glow);
+  animation: pulse-live 1.2s ease-in-out infinite;
+}
+
+/* ── Badge ───────────────────────────────────────────────── */
+.badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: rgba(224, 32, 32, 0.15);
+  color: var(--pb-live);
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid rgba(224, 32, 32, 0.3);
 }

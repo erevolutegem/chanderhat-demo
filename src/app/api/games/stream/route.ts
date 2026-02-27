@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 
 const TOKEN = process.env.BETS_API_TOKEN ?? "244037-F9qXV8p5Cv2Dd3";
-const POLL_MS = 3000; // poll BetsAPI every 3 seconds
+const POLL_MS = 1000; // poll BetsAPI every 1 second
 
 export const runtime = "nodejs"; // SSE needs nodejs runtime
 export const dynamic = "force-dynamic";

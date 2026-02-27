@@ -15,37 +15,69 @@ export interface Match {
 interface State {
     matches: Match[];
     connected: boolean;
-    error: string | null;
+    loading: boolean;
     lastUpdate: Date | null;
 }
 
 /**
- * useRealtimeMatches — connects to /api/games/stream via SSE.
- * Data flows in real-time whenever BetsAPI reports a score/odds change
- * (checked every 3 seconds server-side, pushed only on diff).
+ * useRealtimeMatches:
+ * 1. Immediately loads data via REST /api/games (fast first paint)
+ * 2. Starts SSE stream for real-time updates
+ * 3. Falls back to REST polling every 5s if SSE fails
  */
 export function useRealtimeMatches(sportId?: number) {
     const [state, setState] = useState<State>({
-        matches: [],
-        connected: false,
-        error: null,
-        lastUpdate: null,
+        matches: [], connected: false, loading: true, lastUpdate: null,
     });
 
     const esRef = useRef<EventSource | null>(null);
     const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const retries = useRef(0);
+    const sportRef = useRef(sportId);
+    sportRef.current = sportId;
 
-    const connect = useCallback(() => {
-        // Close existing
+    const apiUrl = useCallback(() => {
+        const sp = sportRef.current;
+        return `/api/games${sp ? `?sportId=${sp}` : ""}`;
+    }, []);
+
+    /* Initial REST load (instant) */
+    const restLoad = useCallback(async (setLoading = false) => {
+        if (setLoading) setState(s => ({ ...s, loading: true }));
+        try {
+            const r = await fetch(apiUrl(), { cache: "no-store" });
+            const d = await r.json();
+            const list: Match[] = Array.isArray(d?.results) ? d.results : [];
+            setState(s => ({ ...s, matches: list, loading: false, lastUpdate: new Date() }));
+        } catch {
+            setState(s => ({ ...s, loading: false }));
+        }
+    }, [apiUrl]);
+
+    /* SSE connection */
+    const connectSSE = useCallback(() => {
         esRef.current?.close();
+        if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
 
-        const url = `/api/games/stream${sportId ? `?sportId=${sportId}` : ""}`;
+        const sp = sportRef.current;
+        const url = `/api/games/stream${sp ? `?sportId=${sp}` : ""}`;
         const es = new EventSource(url);
         esRef.current = es;
 
+        const connectTimeout = setTimeout(() => {
+            // SSE not connected in 5s → fall back to REST polling
+            if (!es || es.readyState !== EventSource.OPEN) {
+                es.close();
+                setState(s => ({ ...s, connected: false }));
+                pollRef.current = setInterval(() => restLoad(), 5_000);
+            }
+        }, 5_000);
+
         es.onopen = () => {
-            setState(s => ({ ...s, connected: true, error: null }));
+            clearTimeout(connectTimeout);
+            setState(s => ({ ...s, connected: true }));
+            if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
             retries.current = 0;
         };
 
@@ -53,38 +85,48 @@ export function useRealtimeMatches(sportId?: number) {
             try {
                 const msg = JSON.parse(e.data);
                 if (msg.type === "matches") {
-                    setState(s => ({
-                        ...s,
-                        matches: msg.data ?? [],
-                        lastUpdate: new Date(),
-                    }));
+                    setState(s => ({ ...s, matches: msg.data ?? [], loading: false, lastUpdate: new Date() }));
                 }
             } catch { }
         };
 
         es.onerror = () => {
-            setState(s => ({ ...s, connected: false, error: "Connection lost" }));
+            clearTimeout(connectTimeout);
+            setState(s => ({ ...s, connected: false }));
             es.close();
 
-            // Exponential backoff reconnect: 1s, 2s, 4s, 8s … max 30s
+            // Fall back to REST polling
+            if (!pollRef.current) {
+                pollRef.current = setInterval(() => restLoad(), 5_000);
+            }
+
+            // Retry SSE after backoff
             const delay = Math.min(1000 * Math.pow(2, retries.current), 30_000);
             retries.current++;
-            retryRef.current = setTimeout(connect, delay);
+            retryRef.current = setTimeout(connectSSE, delay);
         };
-    }, [sportId]);
+
+        return () => { clearTimeout(connectTimeout); };
+    }, [restLoad]);
 
     useEffect(() => {
-        connect();
+        // Immediately load via REST
+        restLoad(true);
+        // Then start SSE
+        const cleanup = connectSSE();
         return () => {
+            cleanup?.();
             esRef.current?.close();
             if (retryRef.current) clearTimeout(retryRef.current);
+            if (pollRef.current) clearInterval(pollRef.current);
         };
-    }, [connect]);
+    }, [sportId]); // Re-run when sport changes
 
     const reconnect = useCallback(() => {
         retries.current = 0;
-        connect();
-    }, [connect]);
+        restLoad(true);
+        connectSSE();
+    }, [restLoad, connectSSE]);
 
     return { ...state, reconnect };
 }

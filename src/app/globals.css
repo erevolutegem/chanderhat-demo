@@ -1,44 +1,51 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..900;1,14..32,300..900&display=swap');
 
+/* ═══════════════════════════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════════════════════════ */
 :root {
-  /* Playbaji color palette */
-  --pb-bg: #1a1a2e;
-  --pb-surface: #16213e;
-  --pb-surface-2: #0f3460;
-  --pb-header: #1a1a2e;
-  --pb-header-bottom: #0d0d1a;
-  --pb-sidebar: #12122a;
-  --pb-card: #1e1e3a;
-  --pb-border: #2a2a4a;
-  --pb-border-light: #333360;
+  --bg: #0f0e17;
+  --bg-2: #13121f;
+  --surface: #1a192a;
+  --surface-2: #201f30;
+  --surface-3: #272638;
+  --border: #2d2c45;
+  --border-2: #3d3c58;
 
-  --pb-primary: #e02020;
-  --pb-primary-hover: #c01818;
-  --pb-accent: #ffd700;
-  --pb-accent-2: #00c4ff;
+  --primary: #e8173a;
+  --primary-d: #b8102e;
+  --primary-glow: rgba(232, 23, 58, 0.28);
 
-  --pb-back: #72bbef;
-  /* Blue odds Back */
-  --pb-lay: #f994ba;
-  /* Pink odds Lay */
-  --pb-back-hover: #5aa8df;
-  --pb-lay-hover: #e87ba8;
+  --gold: #f5c518;
+  --gold-d: #c9a012;
 
-  --pb-live: #e02020;
-  --pb-live-glow: rgba(224, 32, 32, 0.35);
-  --pb-green: #2ecc71;
-  --pb-yellow: #ffd700;
+  --back: #6bbde6;
+  --back-d: #4da8d8;
+  --lay: #f47faa;
+  --lay-d: #dd5f8f;
 
-  --pb-text: #e8e8f0;
-  --pb-text-muted: #8888aa;
-  --pb-text-dim: #555578;
+  --live: #e8173a;
+  --green: #22c55e;
+  --green-d: #16a34a;
 
-  --pb-radius: 6px;
-  --pb-radius-sm: 4px;
-  --pb-radius-lg: 10px;
+  --text: #e2e1ef;
+  --text-2: #9997b8;
+  --text-3: #5e5c7a;
+
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════════════════════════ */
 *,
 *::before,
 *::after {
@@ -52,35 +59,37 @@ html {
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  background: var(--pb-bg);
-  color: var(--pb-text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
   line-height: 1.5;
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Scrollbars ──────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   SCROLLBARS
+═══════════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--pb-bg);
+  background: var(--bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--pb-border);
-  border-radius: 3px;
+  background: var(--border);
+  border-radius: 99px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--pb-border-light);
+  background: var(--border-2);
 }
 
-/* ── Utilities ───────────────────────────────────────────── */
 .scrollbar-hide {
   scrollbar-width: none;
 }
@@ -89,40 +98,20 @@ body {
   display: none;
 }
 
-/* ── Animations ──────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   KEYFRAMES
+═══════════════════════════════════════════════════════════════ */
 @keyframes pulse-live {
 
   0%,
   100% {
     opacity: 1;
+    transform: scale(1);
   }
 
   50% {
-    opacity: 0.4;
-  }
-}
-
-@keyframes slide-in {
-  from {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fade-up {
-  from {
-    transform: translateY(8px);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0);
-    opacity: 1;
+    opacity: 0.5;
+    transform: scale(0.85);
   }
 }
 
@@ -136,72 +125,234 @@ body {
   }
 }
 
-/* ── Skeleton Loaders ────────────────────────────────────── */
+@keyframes fade-up {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateY(-6px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes score-flash {
+  0% {
+    background: var(--primary);
+    color: #fff;
+    transform: scale(1.1);
+  }
+
+  60% {
+    background: rgba(245, 197, 24, 0.3);
+    color: var(--gold);
+  }
+
+  100% {
+    background: transparent;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SKELETONS
+═══════════════════════════════════════════════════════════════ */
 .skeleton {
-  background: linear-gradient(90deg, var(--pb-surface) 25%, var(--pb-border) 50%, var(--pb-surface) 75%);
+  background: linear-gradient(90deg,
+      var(--surface) 25%,
+      var(--surface-2) 50%,
+      var(--surface) 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: var(--pb-radius-sm);
+  animation: shimmer 1.6s infinite;
+  border-radius: var(--radius-sm);
 }
 
-/* ── Bet Button (Back / Lay) ─────────────────────────────── */
-.btn-back {
-  background: var(--pb-back);
-  color: #000;
-  font-weight: 700;
-  border: none;
-  border-radius: var(--pb-radius-sm);
-  cursor: pointer;
-  padding: 6px 10px;
-  transition: background 0.15s;
-  text-align: center;
-  font-size: 12px;
-  min-width: 62px;
-}
-
-.btn-back:hover {
-  background: var(--pb-back-hover);
-}
-
-.btn-lay {
-  background: var(--pb-lay);
-  color: #000;
-  font-weight: 700;
-  border: none;
-  border-radius: var(--pb-radius-sm);
-  cursor: pointer;
-  padding: 6px 10px;
-  transition: background 0.15s;
-  text-align: center;
-  font-size: 12px;
-  min-width: 62px;
-}
-
-.btn-lay:hover {
-  background: var(--pb-lay-hover);
-}
-
-/* ── Live dot ────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   LIVE DOT
+═══════════════════════════════════════════════════════════════ */
 .live-dot {
   display: inline-block;
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--pb-live);
-  box-shadow: 0 0 6px var(--pb-live-glow);
-  animation: pulse-live 1.2s ease-in-out infinite;
+  background: var(--live);
+  box-shadow: 0 0 8px var(--primary-glow);
+  animation: pulse-live 1.4s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
-/* ── Badge ───────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   BADGE
+═══════════════════════════════════════════════════════════════ */
 .badge-live {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 7px;
+  padding: 2px 8px;
   border-radius: 20px;
-  background: rgba(224, 32, 32, 0.15);
-  color: var(--pb-live);
-  font-size: 11px;
+  background: rgba(232, 23, 58, 0.14);
+  color: var(--primary);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(232, 23, 58, 0.3);
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ODDS BUTTONS (global classes for match list table)
+═══════════════════════════════════════════════════════════════ */
+.odd-cell {
+  width: 58px;
+  text-align: center;
+  padding: 9px 2px;
+  cursor: pointer;
+  border-left: 1px solid rgba(0, 0, 0, 0.15);
+  transition: filter 0.1s, transform 0.1s;
+  user-select: none;
+}
+
+.odd-cell:hover {
+  filter: brightness(1.12);
+}
+
+.odd-cell:active {
+  transform: scale(0.95);
+}
+
+.odd-cell-back {
+  background: var(--back);
+}
+
+.odd-cell-lay {
+  background: var(--lay);
+}
+
+.odd-cell-back.active {
+  background: var(--back-d);
+  box-shadow: inset 0 0 0 2px #fff4;
+}
+
+.odd-cell-lay.active {
+  background: var(--lay-d);
+  box-shadow: inset 0 0 0 2px #fff4;
+}
+
+.odd-val {
+  font-size: 13px;
+  font-weight: 800;
+  color: #000;
+  line-height: 1;
+}
+
+.odd-type {
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.55);
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════════════════════ */
+.btn-primary {
+  padding: 9px 20px;
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: #fff;
   font-weight: 700;
-  border: 1px solid rgba(224, 32, 32, 0.3);
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+
+.btn-primary:hover {
+  background: var(--primary-d);
+  box-shadow: 0 4px 16px var(--primary-glow);
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+}
+
+.btn-ghost {
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-2);
+  font-weight: 600;
+  font-size: 13px;
+  border: 1px solid var(--border-2);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.btn-ghost:hover {
+  border-color: var(--text-2);
+  color: var(--text);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CARD
+═══════════════════════════════════════════════════════════════ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TYPOGRAPHY UTILITIES
+═══════════════════════════════════════════════════════════════ */
+.text-gold {
+  color: var(--gold);
+}
+
+.text-live {
+  color: var(--primary);
+}
+
+.text-muted {
+  color: var(--text-2);
+}
+
+.text-dim {
+  color: var(--text-3);
+}
+
+.font-black {
+  font-weight: 900;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ANIMATIONS helpers
+═══════════════════════════════════════════════════════════════ */
+.fade-up {
+  animation: fade-up 0.3s ease both;
+}
+
+.slide-down {
+  animation: slide-down 0.2s ease both;
 }

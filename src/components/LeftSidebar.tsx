@@ -1,15 +1,15 @@
 "use client";
 import React from "react";
-import { Star, ChevronRight, Activity } from "lucide-react";
+import { Activity, Trophy, Star, TrendingUp } from "lucide-react";
 
 const SPORTS = [
-    { id: undefined, icon: "🏠", label: "All Sports", suffix: "" },
-    { id: 3, icon: "🏏", label: "Cricket", suffix: "" },
-    { id: 1, icon: "⚽", label: "Soccer", suffix: "" },
-    { id: 13, icon: "🎾", label: "Tennis", suffix: "" },
-    { id: 18, icon: "🏀", label: "Basketball", suffix: "" },
-    { id: 12, icon: "🏈", label: "American Football", suffix: "" },
-    { id: 4, icon: "🏒", label: "Ice Hockey", suffix: "" },
+    { id: undefined, label: "All Sports", icon: "⚡", color: "#e8173a" },
+    { id: 3, label: "Cricket", icon: "🏏", color: "#22c55e" },
+    { id: 1, label: "Soccer", icon: "⚽", color: "#3b82f6" },
+    { id: 13, label: "Tennis", icon: "🎾", color: "#f59e0b" },
+    { id: 18, label: "Basketball", icon: "🏀", color: "#f97316" },
+    { id: 12, label: "Am. Football", icon: "🏈", color: "#8b5cf6" },
+    { id: 4, label: "Ice Hockey", icon: "🏒", color: "#0ea5e9" },
 ];
 
 interface Props {
@@ -19,39 +19,66 @@ interface Props {
 }
 
 export default function LeftSidebar({ selectedSport, onSelectSport, matchCounts }: Props) {
+    const totalLive = Object.values(matchCounts).reduce((a, b) => a + b, 0);
+
     return (
-        <aside className="w-[200px] xl:w-[220px] flex-shrink-0 hidden lg:flex flex-col"
-            style={{ background: "#12122a", borderRight: "1px solid #2a2a4a", minHeight: "calc(100vh - 112px)" }}>
-            {/* Header */}
-            <div className="px-3 py-2.5 flex items-center gap-2" style={{ borderBottom: "1px solid #2a2a4a" }}>
-                <Activity className="w-4 h-4" style={{ color: "#e02020" }} />
-                <span className="text-xs font-black uppercase tracking-widest" style={{ color: "#ffd700" }}>In-Play</span>
+        <aside style={{
+            width: 210, flexShrink: 0, display: "flex", flexDirection: "column",
+            background: "#131220", borderRight: "1px solid #2d2c45", minHeight: "calc(100vh - 98px)"
+        }}
+            className="hidden lg:flex">
+
+            {/* ── Section label ── */}
+            <div style={{ padding: "10px 14px 8px", borderBottom: "1px solid #2d2c45", display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span className="live-dot" />
+                    <span style={{ fontSize: 11, fontWeight: 800, color: "#e8173a", letterSpacing: 1.5, textTransform: "uppercase" }}>Live</span>
+                </div>
+                {totalLive > 0 && (
+                    <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: "#9997b8" }}>
+                        {totalLive} matches
+                    </span>
+                )}
             </div>
 
-            {/* Sport List */}
-            <nav className="flex-1 overflow-y-auto">
-                {SPORTS.map((sport) => {
-                    const count = sport.id !== undefined ? (matchCounts[String(sport.id)] ?? 0) : Object.values(matchCounts).reduce((a, b) => a + b, 0);
-                    const isActive = selectedSport === sport.id;
+            {/* ── In-Play sport list ── */}
+            <nav style={{ flex: 1, overflowY: "auto", padding: "6px 0" }} className="scrollbar-hide">
+                {SPORTS.map(sport => {
+                    const count = sport.id !== undefined
+                        ? (matchCounts[String(sport.id)] ?? 0)
+                        : totalLive;
+                    const active = selectedSport === sport.id;
 
                     return (
-                        <button
-                            key={String(sport.id)}
+                        <button key={String(sport.id)}
                             onClick={() => onSelectSport(sport.id)}
-                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-all group"
                             style={{
-                                background: isActive ? "rgba(224,32,32,0.12)" : "transparent",
-                                borderLeft: isActive ? "3px solid #e02020" : "3px solid transparent",
-                                borderBottom: "1px solid #1e1e3a",
+                                width: "100%", display: "flex", alignItems: "center", gap: 10,
+                                padding: "10px 14px", border: "none", cursor: "pointer", textAlign: "left",
+                                borderLeft: `3px solid ${active ? sport.color : "transparent"}`,
+                                background: active ? `${sport.color}12` : "transparent",
+                                transition: "background 0.15s, border-color 0.15s",
                             }}
+                            onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = "#1a192a"; } }}
+                            onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
                         >
-                            <span className="text-base flex-shrink-0">{sport.icon}</span>
-                            <span className="flex-1 text-sm font-semibold truncate" style={{ color: isActive ? "#fff" : "#9999bb" }}>
-                                {sport.label}
-                            </span>
+                            {/* Icon */}
+                            <span style={{ fontSize: 16, flexShrink: 0, lineHeight: 1 }}>{sport.icon}</span>
+
+                            {/* Label */}
+                            <span style={{
+                                flex: 1, fontSize: 13, fontWeight: active ? 700 : 500,
+                                color: active ? "#fff" : "#9997b8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                                transition: "color 0.15s"
+                            }}>{sport.label}</span>
+
+                            {/* Count badge */}
                             {count > 0 && (
-                                <span className="text-xs font-black px-1.5 py-0.5 rounded-full flex-shrink-0"
-                                    style={{ background: isActive ? "#e02020" : "#2a2a4a", color: "#fff" }}>
+                                <span style={{
+                                    fontSize: 10, fontWeight: 800, padding: "2px 6px", borderRadius: 99, flexShrink: 0,
+                                    background: active ? sport.color : "#2d2c45",
+                                    color: active ? "#fff" : "#9997b8"
+                                }}>
                                     {count}
                                 </span>
                             )}
@@ -60,12 +87,43 @@ export default function LeftSidebar({ selectedSport, onSelectSport, matchCounts 
                 })}
             </nav>
 
-            {/* Promo Widget */}
-            <div className="p-3" style={{ borderTop: "1px solid #2a2a4a" }}>
-                <div className="rounded-lg p-3 text-center" style={{ background: "linear-gradient(135deg, #e02020 0%, #8b0000 100%)" }}>
-                    <div className="text-yellow-400 font-black text-sm mb-1">🎁 Welcome Bonus</div>
-                    <div className="text-white text-[11px]">Up to ৳10,000</div>
-                    <button className="mt-2 w-full py-1.5 rounded text-xs font-bold bg-yellow-400 text-black">Claim Now</button>
+            {/* ─── Divider ─── */}
+            <div style={{ borderTop: "1px solid #2d2c45" }} />
+
+            {/* ─── Quick Links ─── */}
+            <div style={{ padding: "8px 0" }}>
+                {[
+                    { icon: Trophy, label: "My Bets", color: "#f5c518" },
+                    { icon: TrendingUp, label: "Results", color: "#22c55e" },
+                    { icon: Star, label: "Favourites", color: "#a855f7" },
+                ].map(({ icon: Icon, label, color }) => (
+                    <button key={label} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", border: "none", background: "transparent", cursor: "pointer" }}
+                        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#1a192a")}
+                        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "transparent")}>
+                        <Icon size={14} color={color} />
+                        <span style={{ fontSize: 13, fontWeight: 500, color: "#9997b8" }}>{label}</span>
+                    </button>
+                ))}
+            </div>
+
+            {/* ─── Promo widget ─── */}
+            <div style={{ padding: "12px", borderTop: "1px solid #2d2c45" }}>
+                <div style={{
+                    borderRadius: 10, padding: "14px 12px", textAlign: "center",
+                    background: "linear-gradient(135deg,#1a192a 0%,#221d3a 100%)",
+                    border: "1px solid #3d3c58", position: "relative", overflow: "hidden"
+                }}>
+                    {/* Glow accent */}
+                    <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, borderRadius: "50%", background: "rgba(232,23,58,0.15)", filter: "blur(20px)" }} />
+                    <div style={{ fontSize: 22, marginBottom: 4 }}>🎁</div>
+                    <div style={{ fontWeight: 800, fontSize: 13, color: "#fff", marginBottom: 2 }}>Welcome Bonus</div>
+                    <div style={{ fontSize: 11, color: "#9997b8", marginBottom: 10 }}>Up to <span style={{ color: "#f5c518", fontWeight: 700 }}>৳10,000</span></div>
+                    <button style={{
+                        width: "100%", padding: "8px 0", borderRadius: 6, border: "none",
+                        background: "linear-gradient(135deg,#f5c518,#c9a012)", color: "#000", fontWeight: 800, fontSize: 12, cursor: "pointer"
+                    }}>
+                        Claim Now →
+                    </button>
                 </div>
             </div>
         </aside>

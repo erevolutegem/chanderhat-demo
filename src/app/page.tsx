@@ -34,36 +34,44 @@ export default function Home() {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col pb-16 lg:pb-0" style={{ background: "#1a1a2e" }}>
+      <div className="min-h-screen flex flex-col pb-16 lg:pb-0" style={{ background: "#0f0e17" }}>
         <Navbar onLoginClick={() => setAuthOpen(true)} />
         <HeroSection />
 
-        {/* ── Live Stats bar ── */}
+        {/* ── Live Stats Ticker ── */}
         <div className="flex items-center gap-2 px-3 py-2 overflow-x-auto scrollbar-hide"
-          style={{ background: "#0d0d1a", borderBottom: "1px solid #2a2a4a" }}>
-          <span className="text-[11px] font-black uppercase tracking-widest flex-shrink-0" style={{ color: "#e02020" }}>
-            🔴 LIVE
-          </span>
+          style={{ background: "#0d0c1a", borderBottom: "1px solid #2d2c45" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+            <span className="live-dot" />
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#e8173a", letterSpacing: 1.2, textTransform: "uppercase" }}>Live Now</span>
+          </div>
+          <div style={{ width: 1, height: 14, background: "#2d2c45", flexShrink: 0 }} />
           {[
-            { icon: "🏏", id: 3, label: "Cricket" },
-            { icon: "⚽", id: 1, label: "Soccer" },
-            { icon: "🎾", id: 13, label: "Tennis" },
-            { icon: "🏀", id: 18, label: "Basketball" },
-          ].map(s => (
-            <button key={s.id} onClick={() => setSelectedSport(s.id)}
-              className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all"
-              style={{ background: "#1e1e3a", color: "#9999bb", border: "1px solid #2a2a4a" }}>
-              {s.icon} {s.label}
-              {(matchCounts[String(s.id)] ?? 0) > 0 && (
-                <span className="text-[10px] font-black px-1 rounded-full text-white"
-                  style={{ background: "#e02020" }}>
-                  {matchCounts[String(s.id)]}
-                </span>
-              )}
-            </button>
-          ))}
+            { icon: "🏏", id: 3, label: "Cricket", color: "#22c55e" },
+            { icon: "⚽", id: 1, label: "Soccer", color: "#3b82f6" },
+            { icon: "🎾", id: 13, label: "Tennis", color: "#f59e0b" },
+            { icon: "🏀", id: 18, label: "Basketball", color: "#f97316" },
+          ].map(s => {
+            const cnt = matchCounts[String(s.id)] ?? 0;
+            const active = selectedSport === s.id;
+            return (
+              <button key={s.id} onClick={() => setSelectedSport(s.id)}
+                className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all"
+                style={{
+                  background: active ? `${s.color}22` : "#1a192a", color: active ? s.color : "#9997b8",
+                  border: `1px solid ${active ? s.color + "55" : "#2d2c45"}`
+                }}>
+                {s.icon} {s.label}
+                {cnt > 0 && (
+                  <span style={{ fontSize: 10, fontWeight: 800, padding: "1px 5px", borderRadius: 99, background: active ? s.color : "#2d2c45", color: "#fff" }}>
+                    {cnt}
+                  </span>
+                )}
+              </button>
+            );
+          })}
           {totalLive > 0 && (
-            <span className="ml-auto flex-shrink-0 text-[11px]" style={{ color: "#333355" }}>
+            <span className="ml-auto flex-shrink-0 text-[11px]" style={{ color: "#5e5c7a" }}>
               {totalLive} matches live
             </span>
           )}
@@ -71,25 +79,27 @@ export default function Home() {
 
         {/* Mobile Sport Tabs */}
         <div className="lg:hidden flex overflow-x-auto scrollbar-hide px-2 py-2 gap-1.5"
-          style={{ background: "#12122a", borderBottom: "1px solid #2a2a4a" }}>
-          {SPORT_TABS.map(s => (
-            <button key={String(s.id)} onClick={() => setSelectedSport(s.id)}
-              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition-all"
-              style={{
-                background: selectedSport === s.id ? "#e02020" : "#1e1e3a",
-                color: selectedSport === s.id ? "#fff" : "#6666aa",
-                border: selectedSport === s.id ? "1px solid #e02020" : "1px solid #2a2a4a",
-              }}>
-              <span>{s.icon}</span>
-              <span>{s.label}</span>
-              {s.id !== undefined && (matchCounts[String(s.id)] ?? 0) > 0 && (
-                <span className="text-[10px] font-black px-1 rounded-full"
-                  style={{ background: "rgba(255,255,255,0.2)" }}>
-                  {matchCounts[String(s.id)]}
-                </span>
-              )}
-            </button>
-          ))}
+          style={{ background: "#131220", borderBottom: "1px solid #2d2c45" }}>
+          {SPORT_TABS.map(s => {
+            const active = selectedSport === s.id;
+            return (
+              <button key={String(s.id)} onClick={() => setSelectedSport(s.id)}
+                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition-all"
+                style={{
+                  background: active ? "#e8173a" : "#1a192a", color: active ? "#fff" : "#6664a8",
+                  border: active ? "1px solid #e8173a" : "1px solid #2d2c45"
+                }}>
+                <span>{s.icon}</span>
+                <span>{s.label}</span>
+                {s.id !== undefined && (matchCounts[String(s.id)] ?? 0) > 0 && (
+                  <span className="text-[10px] font-black px-1 rounded-full"
+                    style={{ background: "rgba(255,255,255,0.2)" }}>
+                    {matchCounts[String(s.id)]}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* 3-Column Main Layout */}

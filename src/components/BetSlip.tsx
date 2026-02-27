@@ -1,7 +1,10 @@
 "use client";
 import React, { useState } from "react";
-import { X, ChevronDown, ChevronUp, Trash2, DollarSign } from "lucide-react";
+import { X, ChevronDown, ChevronUp, Trash2, DollarSign, Loader2 } from "lucide-react";
 import type { Match } from "./MatchList";
+import { useAuth } from "@/context/AuthContext";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export interface BetSelection {
     matchId: string;
@@ -19,7 +22,64 @@ interface Props {
 }
 
 export default function BetSlip({ bets, onRemove, onStakeChange, onClear }: Props) {
+    const { user, token, updateBalance } = useAuth();
     const [collapsed, setCollapsed] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handlePlaceBets = async () => {
+        if (!user || !token) {
+            setError("Please log in to place bets.");
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+        let newBalance = user.balance;
+
+        try {
+            for (const bet of bets) {
+                const stake = parseFloat(bet.stake) || 0;
+                if (stake <= 0) continue;
+
+                // For now map selection back to a common oddsType pattern (Back)
+                // In a full implementation, you'd store oddsType in BetSelection
+                const payload = {
+                    matchId: bet.matchId,
+                    matchName: bet.matchName,
+                    market: "Match Odds",
+                    selection: bet.selection,
+                    oddsType: "Back", // Default to Back
+                    odds: parseFloat(bet.odd.replace(",", "")),
+                    stake: stake
+                };
+
+                const res = await fetch(`${API_URL}/bets`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.message || `Failed to place bet on ${bet.matchName}`);
+                }
+
+                newBalance = data.newBalance;
+                onRemove(bet.matchId); // Remove successfully placed bet
+            }
+
+            // After loop, update global balance
+            updateBalance(newBalance);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const totalStake = bets.reduce((acc, b) => acc + (parseFloat(b.stake) || 0), 0);
     const totalReturn = bets.reduce((acc, b) => {
@@ -105,16 +165,27 @@ export default function BetSlip({ bets, onRemove, onStakeChange, onClear }: Prop
                                     <span style={{ color: "#8888aa" }}>Est. Return</span>
                                     <span className="font-bold" style={{ color: "#2ecc71" }}>৳{totalReturn.toFixed(2)}</span>
                                 </div>
-                                <button className="w-full py-2.5 rounded-lg font-bold text-white text-sm transition-all"
-                                    style={{ background: "#e02020" }}
-                                    onMouseEnter={e => (e.currentTarget.style.background = "#c01818")}
-                                    onMouseLeave={e => (e.currentTarget.style.background = "#e02020")}>
-                                    Place Bet
+
+                                {error && (
+                                    <div className="p-2 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-xs text-center">
+                                        {error}
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={handlePlaceBets}
+                                    disabled={loading || totalStake <= 0}
+                                    className="w-full py-2.5 rounded-lg font-bold text-white text-sm transition-all flex items-center justify-center gap-2"
+                                    style={{ background: loading || totalStake <= 0 ? "#555" : "#e02020", opacity: loading ? 0.7 : 1 }}
+                                    onMouseEnter={e => { if (!loading && totalStake > 0) e.currentTarget.style.background = "#c01818" }}
+                                    onMouseLeave={e => { if (!loading && totalStake > 0) e.currentTarget.style.background = "#e02020" }}>
+                                    {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                    {loading ? "Processing..." : "Place Bets"}
                                 </button>
-                                <button onClick={onClear} className="w-full py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1.5 transition-all"
+                                <button onClick={onClear} disabled={loading} className="w-full py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-1.5 transition-all"
                                     style={{ color: "#555578", border: "1px solid #2a2a4a" }}
-                                    onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
-                                    onMouseLeave={e => (e.currentTarget.style.color = "#555578")}>
+                                    onMouseEnter={e => (!loading && (e.currentTarget.style.color = "#fff"))}
+                                    onMouseLeave={e => (!loading && (e.currentTarget.style.color = "#555578"))}>
                                     <Trash2 className="w-3.5 h-3.5" />
                                     Clear All
                                 </button>

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Search, Menu, X, ChevronDown, Wallet, Bell } from "lucide-react";
+import { Search, Menu, X, ChevronDown, Wallet, Bell, LogOut } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const NAV_LINKS = [
     { label: "In-Play", href: "/", badge: "LIVE", badgeColor: "#e8173a" },
@@ -15,6 +16,7 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar({ onLoginClick }: { onLoginClick?: () => void }) {
+    const { user, logout } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
     const [searchOpen, setSearch] = useState(false);
     const [scrolled, setScrolled] = useState(false);
@@ -78,25 +80,42 @@ export default function Navbar({ onLoginClick }: { onLoginClick?: () => void }) 
                             </button>
                         )}
 
-                        {/* Balance chip — logged in state placeholder */}
-                        <div className="hidden md:flex" style={{ alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 8, background: "#1a192a", border: "1px solid #2d2c45" }}>
-                            <Wallet size={13} color="#5e5c7a" />
-                            <span style={{ fontSize: 12, fontWeight: 700, color: "#9997b8" }}>৳ 0.00</span>
-                        </div>
-
-                        {/* Login / Register */}
-                        <button onClick={onLoginClick}
-                            style={{ padding: "8px 16px", background: "none", border: "1px solid #3d3c58", borderRadius: 8, color: "#e2e1ef", fontWeight: 600, fontSize: 13, cursor: "pointer", transition: "border-color 0.15s", whiteSpace: "nowrap" }}
-                            onMouseEnter={e => (e.currentTarget.style.borderColor = "#9997b8")}
-                            onMouseLeave={e => (e.currentTarget.style.borderColor = "#3d3c58")}>
-                            Log in
-                        </button>
-                        <button onClick={onLoginClick}
-                            style={{ padding: "8px 18px", background: "linear-gradient(135deg,#e8173a 0%,#c8102e 100%)", border: "none", borderRadius: 8, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 2px 10px rgba(232,23,58,0.35)", transition: "box-shadow 0.15s" }}
-                            onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 4px 18px rgba(232,23,58,0.55)")}
-                            onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 2px 10px rgba(232,23,58,0.35)")}>
-                            Join Now
-                        </button>
+                        {/* Auth state: Logged In vs Logged Out */}
+                        {user ? (
+                            <div className="flex items-center gap-4">
+                                {/* Balance chip */}
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                                    <Wallet size={14} className="text-emerald-500" />
+                                    <span className="text-[13px] font-bold text-emerald-400">৳ {user.balance.toFixed(2)}</span>
+                                </div>
+                                {/* Username */}
+                                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: "#1a192a", border: "1px solid #2d2c45" }}>
+                                    <div className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white">
+                                        {user.username.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="text-[13px] font-semibold text-[#e2e1ef]">{user.username}</span>
+                                </div>
+                                {/* Logout */}
+                                <button onClick={logout} title="Log out" className="p-1.5 text-slate-500 hover:text-red-400 transition-colors">
+                                    <LogOut size={16} />
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <button onClick={onLoginClick}
+                                    style={{ padding: "8px 16px", background: "none", border: "1px solid #3d3c58", borderRadius: 8, color: "#e2e1ef", fontWeight: 600, fontSize: 13, cursor: "pointer", transition: "border-color 0.15s", whiteSpace: "nowrap" }}
+                                    onMouseEnter={e => (e.currentTarget.style.borderColor = "#9997b8")}
+                                    onMouseLeave={e => (e.currentTarget.style.borderColor = "#3d3c58")}>
+                                    Log in
+                                </button>
+                                <button onClick={onLoginClick}
+                                    style={{ padding: "8px 18px", background: "linear-gradient(135deg,#e8173a 0%,#c8102e 100%)", border: "none", borderRadius: 8, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 2px 10px rgba(232,23,58,0.35)", transition: "box-shadow 0.15s" }}
+                                    onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 4px 18px rgba(232,23,58,0.55)")}
+                                    onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 2px 10px rgba(232,23,58,0.35)")}>
+                                    Join Now
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -143,8 +162,14 @@ export default function Navbar({ onLoginClick }: { onLoginClick?: () => void }) 
                             </a>
                         ))}
                         <div style={{ padding: "12px 16px", display: "flex", gap: 8 }}>
-                            <button onClick={onLoginClick} style={{ flex: 1, padding: "11px 0", borderRadius: 8, border: "1px solid #3d3c58", background: "none", color: "#fff", fontWeight: 700, cursor: "pointer" }}>Log in</button>
-                            <button onClick={onLoginClick} style={{ flex: 1, padding: "11px 0", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#e8173a,#c8102e)", color: "#fff", fontWeight: 700, cursor: "pointer" }}>Join Now</button>
+                            {user ? (
+                                <button onClick={() => { logout(); setMenuOpen(false); }} style={{ flex: 1, padding: "11px 0", borderRadius: 8, border: "1px solid #3d3c58", background: "rgba(255,0,0,0.1)", color: "#ff4d4d", fontWeight: 700, cursor: "pointer" }}>Log out</button>
+                            ) : (
+                                <>
+                                    <button onClick={() => { onLoginClick?.(); setMenuOpen(false); }} style={{ flex: 1, padding: "11px 0", borderRadius: 8, border: "1px solid #3d3c58", background: "none", color: "#fff", fontWeight: 700, cursor: "pointer" }}>Log in</button>
+                                    <button onClick={() => { onLoginClick?.(); setMenuOpen(false); }} style={{ flex: 1, padding: "11px 0", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#e8173a,#c8102e)", color: "#fff", fontWeight: 700, cursor: "pointer" }}>Join Now</button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </>

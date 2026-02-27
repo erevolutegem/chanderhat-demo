@@ -42,7 +42,7 @@ export default function Home() {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col pb-16 lg:pb-0 bg-[var(--bg)]">
+      <div className="min-h-screen flex flex-col pb-16 lg:pb-0 bg-[var(--bg)] overflow-x-hidden max-w-[100vw] w-full relative">
         <Navbar onLoginClick={() => setAuthOpen(true)} />
 
         {/* Playbaji Layout Container */}

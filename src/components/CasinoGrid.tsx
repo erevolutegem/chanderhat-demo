@@ -29,17 +29,17 @@ export default function CasinoGrid({ title, games }: { title: string, games: Cas
                         </div>
 
                         {/* Playbaji Bottom Overlay Strip */}
-                        <div className="absolute bottom-0 left-0 right-0 h-[36px] bg-black/80 backdrop-blur-sm flex items-center justify-between pl-3 pr-0 border-t border-[var(--border)] group-hover:bg-black transition-colors">
+                        <div className="absolute bottom-0 left-0 right-0 h-[36px] bg-black/80 backdrop-blur-sm flex items-center justify-between pl-2 md:pl-3 pr-0 border-t border-[var(--border)] group-hover:bg-black transition-colors">
                             {/* Game Name */}
-                            <span className="text-white text-[12px] md:text-[14px] font-bold truncate pr-2">
+                            <span className="text-white text-[11px] md:text-[13px] font-bold truncate pr-1 md:pr-2">
                                 {game.name}
                             </span>
 
                             {/* Slanted "Play Now" Button matching Playbaji */}
-                            <div className="h-full bg-[var(--custom-purple)] flex items-center justify-center px-3"
+                            <div className="h-full bg-[var(--custom-purple)] flex items-center justify-center px-1.5 md:px-3"
                                 style={{ clipPath: "polygon(15% 0, 100% 0, 100% 100%, 0 100%)" }}
                             >
-                                <span className="text-white text-[10px] md:text-[11px] font-bold uppercase tracking-wide ml-1 whitespace-nowrap">Play Now</span>
+                                <span className="text-white text-[9px] md:text-[11px] font-bold uppercase tracking-wide ml-1 whitespace-nowrap">Play Now</span>
                             </div>
                         </div>
                     </div>

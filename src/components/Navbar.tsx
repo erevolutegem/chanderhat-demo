@@ -12,7 +12,7 @@ export default function Navbar({ onLoginClick }: { onLoginClick?: () => void }) 
         <>
             {/* Playbaji Header - Dark, Dense, Professional */}
             <div className="bg-[var(--bg)] border-b border-[var(--border)] sticky top-0 z-50">
-                <div className="max-w-[1440px] mx-auto px-4 h-[60px] flex items-center gap-4">
+                <div className="max-w-[1440px] mx-auto px-2 lg:px-4 h-[60px] flex items-center gap-2 lg:gap-4">
 
                     {/* Hamburger — mobile only */}
                     <button onClick={() => setMenuOpen(true)} className="lg:hidden text-[var(--text-2)] p-1 flex">
@@ -22,7 +22,7 @@ export default function Navbar({ onLoginClick }: { onLoginClick?: () => void }) 
                     {/* Logo (Text/Brand) */}
                     <a href="/" className="flex items-center gap-2 flex-shrink-0 text-white no-underline">
                         <div className="flex flex-col leading-none">
-                            <span className="font-black text-[26px] tracking-tight">
+                            <span className="font-black text-[22px] lg:text-[26px] tracking-tight">
                                 play<span className="text-[var(--primary)] text-shadow-sm">baji</span>
                             </span>
                         </div>
@@ -43,7 +43,7 @@ export default function Navbar({ onLoginClick }: { onLoginClick?: () => void }) 
                     <div className="flex-1 lg:hidden" />
 
                     {/* Right Side Actions / Auth */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 lg:gap-3">
                         {user ? (
                             <>
                                 {/* Balance */}
@@ -73,7 +73,7 @@ export default function Navbar({ onLoginClick }: { onLoginClick?: () => void }) 
                                 </button>
                                 <button
                                     onClick={onLoginClick}
-                                    className="px-5 h-[36px] bg-[var(--primary)] text-black text-[13px] font-bold rounded hover:bg-[var(--primary-d)] transition-colors whitespace-nowrap"
+                                    className="px-3 md:px-5 h-[32px] md:h-[36px] bg-[var(--primary)] text-black text-[11px] md:text-[13px] font-bold rounded hover:bg-[var(--primary-d)] transition-colors whitespace-nowrap"
                                 >
                                     Sign Up
                                 </button>

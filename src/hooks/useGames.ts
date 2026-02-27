@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 
 export interface Game {
     id: string;
@@ -19,72 +19,64 @@ export const useGames = (sportId?: number) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchGames = useCallback(async (isInitial = false) => {
-        if (isInitial) setLoading(true);
-        setError(null);
+    useEffect(() => {
+        let eventSource: EventSource | null = null;
+        setLoading(true);
 
-        try {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dev.chanderhat.com';
-            const url = sportId ? `${apiUrl}/games/live?sportId=${sportId}` : `${apiUrl}/games/live`;
+        const connectStream = () => {
+            const streamUrl = sportId ? `/api/stream?sportId=${sportId}` : `/api/stream`;
+            eventSource = new EventSource(streamUrl);
 
-            console.log(`[useGames] Fetching: ${url}`);
+            eventSource.onmessage = (event) => {
+                try {
+                    const parsedData = JSON.parse(event.data);
 
-            const response = await fetch(url, { cache: 'no-store' });
+                    const colors = [
+                        "from-blue-600 to-indigo-900",
+                        "from-pink-600 to-purple-900",
+                        "from-red-600 to-orange-900",
+                        "from-yellow-600 to-amber-900",
+                        "from-green-600 to-emerald-900",
+                        "from-cyan-600 to-blue-900",
+                    ];
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    const mappedGames: Game[] = parsedData.map((item: any, index: number) => ({
+                        id: String(item.id || item.FI || `game-${index}`),
+                        name: item.home && item.away
+                            ? `${item.home} vs ${item.away}`
+                            : (item.name || "Live Match"),
+                        type: item.league || "Live",
+                        provider: "BETSAPI",
+                        sport_id: item.sport_id ? String(item.sport_id) : null,
+                        ss: item.ss || "0-0",
+                        timer: item.timer || "0",
+                        color: colors[index % colors.length],
+                        odds: Array.isArray(item.odds) ? item.odds : [],
+                    }));
+
+                    setGames(mappedGames);
+                    setLoading(false);
+                    setError(null);
+                } catch (err) {
+                    console.error("[useGames] SSE Parse Error:", err);
+                }
+            };
+
+            eventSource.onerror = () => {
+                console.error("[useGames] SSE disconnected, retrying...");
+                eventSource?.close();
+                setTimeout(connectStream, 5000); // Reconnect logic
+            };
+        };
+
+        connectStream();
+
+        return () => {
+            if (eventSource) {
+                eventSource.close();
             }
-
-            const data = await response.json();
-            console.log(`[useGames] Received ${data?.count ?? 0} games. success=${data?.success}`);
-
-            if (data && Array.isArray(data.results) && data.results.length > 0) {
-                const colors = [
-                    "from-blue-600 to-indigo-900",
-                    "from-pink-600 to-purple-900",
-                    "from-red-600 to-orange-900",
-                    "from-yellow-600 to-amber-900",
-                    "from-green-600 to-emerald-900",
-                    "from-cyan-600 to-blue-900",
-                ];
-
-                const mappedGames: Game[] = data.results.map((item: any, index: number) => ({
-                    id: String(item.id || item.FI || `game-${index}`),
-                    name: item.home && item.away
-                        ? `${item.home} vs ${item.away}`
-                        : (item.name || "Live Match"),
-                    type: item.league || "Live",
-                    provider: "BETSAPI",
-                    sport_id: item.sport_id ? String(item.sport_id) : null,
-                    ss: item.ss || "0-0",
-                    timer: item.timer || "0",
-                    color: colors[index % colors.length],
-                    odds: Array.isArray(item.odds) ? item.odds : [],
-                }));
-
-                setGames(mappedGames);
-            } else {
-                // Don't clear existing games on empty refresh — only set empty on initial load
-                if (isInitial) setGames([]);
-                if (data?.error) setError(`API: ${data.error}`);
-                else if (!data?.results?.length) setError("No live games available right now");
-            }
-        } catch (err: any) {
-            console.error("[useGames] Error:", err.message);
-            if (isInitial) setGames([]);
-            setError(err.message);
-        } finally {
-            if (isInitial) setLoading(false);
-        }
+        };
     }, [sportId]);
 
-    useEffect(() => {
-        fetchGames(true);
-
-        // Auto-refresh every 30 seconds
-        const interval = setInterval(() => fetchGames(false), 30000);
-        return () => clearInterval(interval);
-    }, [fetchGames]);
-
-    return { games, loading, error, refresh: () => fetchGames(false) };
+    return { games, loading, error, refresh: () => { } }; // refresh not needed for SSE
 };

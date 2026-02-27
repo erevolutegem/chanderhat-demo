@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Activity, Calendar, CalendarDays, RefreshCw, ChevronRight, X, Minus, Plus, Check } from "lucide-react";
+import { Activity, Calendar, CalendarDays, RefreshCw, ChevronRight, X, Minus, Plus, Check, Tv } from "lucide-react";
+import LiveTVModal from "./LiveTVModal";
 
 export interface Match {
     id: string;
@@ -35,6 +36,8 @@ interface Props {
     onCountChange?: (c: Record<string, number>) => void;
 }
 
+interface LiveTV { matchId: string; home: string; away: string; sportId: string; league: string; ss: string | null; timer: string | null; }
+
 export default function MatchList({ sportId, onCountChange }: Props) {
     const [tab, setTab] = useState<Tab>("inplay");
     const [matches, setMatches] = useState<Match[]>([]);
@@ -42,6 +45,7 @@ export default function MatchList({ sportId, onCountChange }: Props) {
     const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
     const [activeBet, setActiveBet] = useState<BetEntry | null>(null);
     const [betOk, setBetOk] = useState(false);
+    const [liveTV, setLiveTV] = useState<LiveTV | null>(null);
 
     useEffect(() => { setTab("inplay"); setActiveBet(null); }, [sportId]);
 
@@ -67,7 +71,7 @@ export default function MatchList({ sportId, onCountChange }: Props) {
     useEffect(() => {
         let alive = true;
         load(true);
-        const iv = setInterval(() => alive && load(), 30_000);
+        const iv = setInterval(() => alive && load(), 15_000);
         return () => { alive = false; clearInterval(iv); };
     }, [load]);
 
@@ -223,10 +227,15 @@ export default function MatchList({ sportId, onCountChange }: Props) {
                                             <OddBtn team="away" type="Lay" odd={o3} />
                                         </div>
                                     </div>
-                                    {/* Bottom bar: timer + More Markets */}
-                                    <div style={{ display: "flex", alignItems: "center", padding: "2px 12px 8px", gap: 8 }}>
+                                    {/* Bottom bar: timer + TV + More Markets */}
+                                    <div style={{ display: "flex", alignItems: "center", padding: "2px 12px 8px", gap: 6 }}>
                                         {ev.timer && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: "#1e1e3a", color: "#e02020" }}>⏱ {ev.timer}'</span>}
                                         {ev.ss && <span style={{ fontSize: 10, color: "#444466" }}>{ev.ss}</span>}
+                                        {/* Live TV button */}
+                                        <button onClick={() => setLiveTV({ matchId: ev.id, home: ev.home, away: ev.away, sportId: ev.sport_id, league: ev.league, ss: ev.ss, timer: ev.timer })}
+                                            style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 20, background: "rgba(224,32,32,0.12)", color: "#e02020", border: "1px solid rgba(224,32,32,0.3)", cursor: "pointer" }}>
+                                            <Tv size={10} /> Live TV
+                                        </button>
                                         <MoreMarketsBtn id={ev.id} />
                                     </div>
                                 </div>
@@ -240,8 +249,22 @@ export default function MatchList({ sportId, onCountChange }: Props) {
 
             {lastUpdate && !loading && matches.length > 0 && (
                 <div style={{ textAlign: "center", fontSize: 10, color: "#2a2a44", padding: "8px 0" }}>
-                    Auto-refreshes every 30s · {lastUpdate.toLocaleTimeString()}
+                    Auto-refreshes every 15s · {lastUpdate.toLocaleTimeString()}
                 </div>
+            )}
+
+            {/* Live TV Modal */}
+            {liveTV && (
+                <LiveTVModal
+                    matchId={liveTV.matchId}
+                    home={liveTV.home}
+                    away={liveTV.away}
+                    sportId={liveTV.sportId}
+                    league={liveTV.league}
+                    ss={liveTV.ss}
+                    timer={liveTV.timer}
+                    onClose={() => setLiveTV(null)}
+                />
             )}
         </div>
     );

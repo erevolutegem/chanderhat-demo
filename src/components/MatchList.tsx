@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
-    Loader2, Activity, Calendar, CalendarDays,
+    Activity, Calendar, CalendarDays,
     ChevronRight, RefreshCw, X, Minus, Plus, Check
 } from "lucide-react";
 
@@ -217,6 +218,7 @@ function MatchRow({ ev, activeBet, onSelectOdd }: {
     activeBet: BetEntry | null;
     onSelectOdd: (m: Match, team: string, type: "Back" | "Lay", odd: string) => void;
 }) {
+    const router = useRouter();
     const parts = ev.ss?.split("-").map(s => s.trim()) ?? [];
     const hs = parts[0] ?? null;
     const as_ = parts[1] ?? null;
@@ -291,15 +293,24 @@ function MatchRow({ ev, activeBet, onSelectOdd }: {
                 </div>
             </div>
 
-            {/* Timer */}
-            {ev.timer && (
-                <div className="px-3 pb-1.5 flex items-center gap-1.5">
+            {/* Bottom bar: timer + more markets link */}
+            <div className="px-3 pb-2 flex items-center gap-2">
+                {ev.timer && (
                     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: "#1e1e3a", color: "#e02020" }}>
                         ⏱ {ev.timer}&apos;
                     </span>
-                    {ev.ss && <span className="text-[10px]" style={{ color: "#444466" }}>{ev.ss}</span>}
-                </div>
-            )}
+                )}
+                {ev.ss && <span className="text-[10px]" style={{ color: "#444466" }}>{ev.ss}</span>}
+                <button
+                    onClick={() => router.push(`/match/${encodeURIComponent(ev.id)}`)}
+                    className="ml-auto flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all"
+                    style={{ background: "#1e1e3a", color: "#7777aa", border: "1px solid #2a2a4a" }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#e02020"; e.currentTarget.style.color = "#fff"; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#2a2a4a"; e.currentTarget.style.color = "#7777aa"; }}
+                >
+                    More Markets <ChevronRight className="w-3 h-3" />
+                </button>
+            </div>
         </div>
     );
 }

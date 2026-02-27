@@ -200,7 +200,12 @@ export default function MatchList({ sportId, onCountChange }: Props) {
                                     <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 12px" }}>
                                         <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
                                             <span className="live-dot" style={{ flexShrink: 0 }} />
-                                            <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: hWin ? "#fff" : "#b0b0cc", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.home}</span>
+                                            <a href={`/match/${encodeURIComponent(ev.id)}`}
+                                                style={{ flex: 1, fontSize: 13, fontWeight: 600, color: hWin ? "#fff" : "#b0b0cc", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none", cursor: "pointer" }}
+                                                onMouseEnter={e => (e.currentTarget.style.color = "#ffd700")}
+                                                onMouseLeave={e => (e.currentTarget.style.color = hWin ? "#fff" : "#b0b0cc")}>
+                                                {ev.home}
+                                            </a>
                                             {hs && <ScoreFlash value={hs} win={!!hWin} />}
                                         </div>
                                         <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
@@ -212,7 +217,12 @@ export default function MatchList({ sportId, onCountChange }: Props) {
                                     <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 12px 7px" }}>
                                         <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
                                             <span style={{ width: 7, height: 7, flexShrink: 0 }} />
-                                            <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: aWin ? "#fff" : "#b0b0cc", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.away}</span>
+                                            <a href={`/match/${encodeURIComponent(ev.id)}`}
+                                                style={{ flex: 1, fontSize: 13, fontWeight: 600, color: aWin ? "#fff" : "#b0b0cc", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none", cursor: "pointer" }}
+                                                onMouseEnter={e => (e.currentTarget.style.color = "#ffd700")}
+                                                onMouseLeave={e => (e.currentTarget.style.color = aWin ? "#fff" : "#b0b0cc")}>
+                                                {ev.away}
+                                            </a>
                                             {as_ && <ScoreFlash value={as_} win={!!aWin} />}
                                         </div>
                                         <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>

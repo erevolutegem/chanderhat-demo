@@ -86,13 +86,13 @@ function encode(data: object): Uint8Array {
 
 export async function GET(req: NextRequest) {
     const sportId = req.nextUrl.searchParams.get("sportId") ?? undefined;
+    const matchId = req.nextUrl.searchParams.get("matchId") ?? undefined;
 
     let closed = false;
     req.signal.addEventListener("abort", () => { closed = true; });
 
     const stream = new ReadableStream({
         async start(controller) {
-            // Send initial heartbeat
             controller.enqueue(new TextEncoder().encode(": ping\n\n"));
 
             let lastSnapshot = "";
@@ -100,21 +100,29 @@ export async function GET(req: NextRequest) {
             while (!closed) {
                 try {
                     const matches = await fetchMatches(sportId);
-                    const snapshot = JSON.stringify(matches);
 
-                    // Only push if data actually changed (score/odds/timer changed)
+                    // If matchId specified, filter to just that match
+                    const payload = matchId
+                        ? matches.filter(m => m.id === matchId)
+                        : matches;
+
+                    const snapshot = JSON.stringify(payload);
+
                     if (snapshot !== lastSnapshot) {
                         lastSnapshot = snapshot;
-                        controller.enqueue(encode({ type: "matches", data: matches }));
+                        if (matchId) {
+                            // For single match page: send match object directly
+                            controller.enqueue(encode({ type: "match", data: payload[0] ?? null }));
+                        } else {
+                            controller.enqueue(encode({ type: "matches", data: payload }));
+                        }
                     } else {
-                        // Send heartbeat to keep connection alive
                         controller.enqueue(new TextEncoder().encode(": heartbeat\n\n"));
                     }
                 } catch {
                     controller.enqueue(encode({ type: "error", message: "fetch failed" }));
                 }
 
-                // Wait POLL_MS then check again
                 await new Promise<void>(resolve => {
                     const t = setTimeout(resolve, POLL_MS);
                     req.signal.addEventListener("abort", () => { clearTimeout(t); resolve(); });

@@ -62,10 +62,10 @@ export default function MatchDetailPage() {
     const [connected, setConnected] = useState(false);
     const [initLoading, setInitLoading] = useState(true);
 
-    const [tvOpen, setTvOpen] = useState(true);   // live TV starts open
-    const [chanIdx, setChanIdx] = useState(0);
+    const [tvOpen, setTvOpen] = useState(true);
     const [muted, setMuted] = useState(false);
-    const [tvLoad, setTvLoad] = useState(true);
+    type StreamState = { status: "loading" } | { status: "live"; url: string } | { status: "unavailable" };
+    const [streamState, setStreamState] = useState<StreamState>({ status: "loading" });
 
     const [openMarkets, setOpenMarkets] = useState<Set<string>>(new Set(["Match Odds"]));
     const [activeBet, setActiveBet] = useState<ActiveBet | null>(null);
@@ -86,6 +86,19 @@ export default function MatchDetailPage() {
                 }
             } finally { setInitLoading(false); }
         })();
+    }, [id]);
+
+    /* ── Fetch BetsAPI stream ── */
+    useEffect(() => {
+        if (!id) return;
+        setStreamState({ status: "loading" });
+        fetch(`/api/stream/${encodeURIComponent(id)}`, { cache: "no-store" })
+            .then(r => r.json())
+            .then(d => {
+                if (d.available && d.url) setStreamState({ status: "live", url: d.url });
+                else setStreamState({ status: "unavailable" });
+            })
+            .catch(() => setStreamState({ status: "unavailable" }));
     }, [id]);
 
     /* ── SSE real-time score stream ── */
@@ -123,8 +136,6 @@ export default function MatchDetailPage() {
     const hWin = hs && as_ && Number(hs) > Number(as_);
     const aWin = as_ && hs && Number(as_) > Number(hs);
 
-    const channels = SPORT_CHANNELS[match?.sport ?? ""] ?? SPORT_CHANNELS["default"];
-    const channel = channels[chanIdx] ?? channels[0];
 
     const toggleMarket = (n: string) => setOpenMarkets(prev => {
         const s = new Set(prev); s.has(n) ? s.delete(n) : s.add(n); return s;
@@ -226,46 +237,54 @@ export default function MatchDetailPage() {
                                 <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "1px 7px", borderRadius: 20, background: "rgba(224,32,32,0.15)", color: "#e02020", fontSize: 10, fontWeight: 700, border: "1px solid rgba(224,32,32,0.3)" }}>
                                     <span className="live-dot" /> ON AIR
                                 </span>
-                                {/* Channel tabs */}
-                                <div style={{ display: "flex", gap: 4, marginLeft: "auto" }}>
-                                    {channels.map((ch, i) => (
-                                        <button key={i} onClick={() => { setChanIdx(i); setTvLoad(true); }}
-                                            style={{
-                                                padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700, border: "1px solid", cursor: "pointer",
-                                                background: chanIdx === i ? "rgba(224,32,32,0.15)" : "transparent",
-                                                borderColor: chanIdx === i ? "#e02020" : "#2a2a4a",
-                                                color: chanIdx === i ? "#e02020" : "#7777aa"
-                                            }}>
-                                            {ch.name}
-                                        </button>
-                                    ))}
-                                </div>
-                                <button onClick={() => setMuted(v => !v)} style={{ background: "none", border: "none", cursor: "pointer", color: muted ? "#e02020" : "#7777aa" }}>
-                                    {muted ? "🔇" : "🔊"}
-                                </button>
+                                <div style={{ flex: 1 }} />
+                                {streamState.status === "live" && (
+                                    <button onClick={() => setMuted(v => !v)} style={{ background: "none", border: "none", cursor: "pointer", color: muted ? "#e02020" : "#7777aa" }}>
+                                        {muted ? "🔇" : "🔊"}
+                                    </button>
+                                )}
                                 <button onClick={() => setTvOpen(v => !v)} style={{ background: "none", border: "none", cursor: "pointer", color: "#7777aa" }}>
                                     {tvOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                 </button>
                             </div>
 
-                            {/* Player */}
+                            {/* Player area */}
                             {tvOpen && (
-                                <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", background: "#050510" }}>
-                                    {tvLoad && (
-                                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 12, zIndex: 1 }}>
-                                            <div style={{ width: 50, height: 50, borderRadius: "50%", border: "3px solid #2a2a4a", borderTop: "3px solid #e02020", animation: "spin 1s linear infinite" }} />
-                                            <p style={{ color: "#555578", fontSize: 13 }}>Loading stream…</p>
+                                <div style={{ width: "100%", aspectRatio: "16/9", background: "#050510", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                                    {streamState.status === "loading" && (
+                                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+                                            <div style={{ width: 48, height: 48, borderRadius: "50%", border: "3px solid #2a2a4a", borderTop: "3px solid #e02020", animation: "spin 1s linear infinite" }} />
+                                            <p style={{ color: "#555578", fontSize: 13 }}>Checking stream…</p>
                                         </div>
                                     )}
-                                    <iframe
-                                        key={`${channel.videoId}-${muted}`}
-                                        src={`https://www.youtube-nocookie.com/embed/${channel.videoId}?autoplay=1&mute=${muted ? 1 : 0}&rel=0&modestbranding=1`}
-                                        style={{ width: "100%", height: "100%", border: "none" }}
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowFullScreen
-                                        title={`${match.home} vs ${match.away}`}
-                                        onLoad={() => setTvLoad(false)}
-                                    />
+                                    {streamState.status === "unavailable" && (
+                                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, textAlign: "center", padding: "0 24px" }}>
+                                            <div style={{ width: 64, height: 64, borderRadius: "50%", background: "#1e1e3a", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid #2a2a4a" }}>
+                                                <Tv size={28} color="#333355" />
+                                            </div>
+                                            <p style={{ color: "#555588", fontSize: 14, fontWeight: 700 }}>Stream not available</p>
+                                            <p style={{ color: "#333355", fontSize: 12 }}>Live stream is not provided by the broadcaster for this match</p>
+                                            <button onClick={() => {
+                                                setStreamState({ status: "loading" });
+                                                fetch(`/api/stream/${encodeURIComponent(id)}`, { cache: "no-store" })
+                                                    .then(r => r.json())
+                                                    .then(d => d.available && d.url ? setStreamState({ status: "live", url: d.url }) : setStreamState({ status: "unavailable" }))
+                                                    .catch(() => setStreamState({ status: "unavailable" }));
+                                            }} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 8, background: "#1e1e3a", border: "1px solid #2a2a4a", color: "#7777aa", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
+                                                <RefreshCw size={12} /> Try again
+                                            </button>
+                                        </div>
+                                    )}
+                                    {streamState.status === "live" && (
+                                        <iframe
+                                            key={streamState.url}
+                                            src={streamState.url + (muted ? (streamState.url.includes("?") ? "&mute=1" : "?mute=1") : "")}
+                                            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                            title={`${match.home} vs ${match.away}`}
+                                        />
+                                    )}
                                 </div>
                             )}
                         </div>

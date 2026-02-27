@@ -1,24 +1,33 @@
 "use client";
 import React, { useState, useCallback } from "react";
-import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import LeftSidebar from "@/components/LeftSidebar";
 import MatchList from "@/components/MatchList";
 import BetSlip from "@/components/BetSlip";
 import HeroSection from "@/components/HeroSection";
+import PromoBanners from "@/components/PromoBanners";
 import CasinoGrid from "@/components/CasinoGrid";
 import Footer from "@/components/Footer";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import AuthModal from "@/components/AuthModal";
 
-const SPORT_TABS = [
-  { id: undefined, icon: "⚡", label: "All" },
-  { id: 3, icon: "🏏", label: "Cricket" },
-  { id: 1, icon: "⚽", label: "Soccer" },
-  { id: 13, icon: "🎾", label: "Tennis" },
-  { id: 18, icon: "🏀", label: "Basketball" },
-  { id: 12, icon: "🏈", label: "Football" },
-  { id: 4, icon: "🏒", label: "Hockey" },
+// Mock data for Playbaji Clone Casino Grid
+const LIVE_CASINO_GAMES = [
+  { id: "c1", name: "Mono Poly", image: "/api/placeholder/400/300" },
+  { id: "c2", name: "Mega Roulette", image: "/api/placeholder/400/300" },
+  { id: "c3", name: "Mega Sicbo", image: "/api/placeholder/400/300" },
+  { id: "c4", name: "Mega Wheel", image: "/api/placeholder/400/300" },
+  { id: "c5", name: "Magic Wheel", image: "/api/placeholder/400/300" },
+  { id: "c6", name: "American Roulette", image: "/api/placeholder/400/300" },
+  { id: "c7", name: "European Roulette", image: "/api/placeholder/400/300" },
+  { id: "c8", name: "Roll to Luck", image: "/api/placeholder/400/300" },
+];
+
+const SLOT_GAMES = [
+  { id: "s1", name: "French Roulette", image: "/api/placeholder/400/300" },
+  { id: "s2", name: "Jili City", image: "/api/placeholder/400/300" },
+  { id: "s3", name: "Slot Games (Playball)", image: "/api/placeholder/400/300" },
+  { id: "s4", name: "Lucky 777", image: "/api/placeholder/400/300" },
 ];
 
 export default function Home() {
@@ -30,96 +39,59 @@ export default function Home() {
     setMatchCounts(counts);
   }, []);
 
-  const totalLive = Object.values(matchCounts).reduce((a, b) => a + b, 0);
-
   return (
     <>
-      <div className="min-h-screen flex flex-col pb-16 lg:pb-0" style={{ background: "#0f0e17" }}>
+      <div className="min-h-screen flex flex-col pb-16 lg:pb-0 bg-[var(--bg)]">
         <Navbar onLoginClick={() => setAuthOpen(true)} />
-        <HeroSection />
 
-        {/* ── Live Stats Ticker ── */}
-        <div className="flex items-center gap-2 px-3 py-2 overflow-x-auto scrollbar-hide"
-          style={{ background: "#0d0c1a", borderBottom: "1px solid #2d2c45" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
-            <span className="live-dot" />
-            <span style={{ fontSize: 11, fontWeight: 800, color: "#e8173a", letterSpacing: 1.2, textTransform: "uppercase" }}>Live Now</span>
-          </div>
-          <div style={{ width: 1, height: 14, background: "#2d2c45", flexShrink: 0 }} />
-          {[
-            { icon: "🏏", id: 3, label: "Cricket", color: "#22c55e" },
-            { icon: "⚽", id: 1, label: "Soccer", color: "#3b82f6" },
-            { icon: "🎾", id: 13, label: "Tennis", color: "#f59e0b" },
-            { icon: "🏀", id: 18, label: "Basketball", color: "#f97316" },
-          ].map(s => {
-            const cnt = matchCounts[String(s.id)] ?? 0;
-            const active = selectedSport === s.id;
-            return (
-              <button key={s.id} onClick={() => setSelectedSport(s.id)}
-                className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all"
-                style={{
-                  background: active ? `${s.color}22` : "#1a192a", color: active ? s.color : "#9997b8",
-                  border: `1px solid ${active ? s.color + "55" : "#2d2c45"}`
-                }}>
-                {s.icon} {s.label}
-                {cnt > 0 && (
-                  <span style={{ fontSize: 10, fontWeight: 800, padding: "1px 5px", borderRadius: 99, background: active ? s.color : "#2d2c45", color: "#fff" }}>
-                    {cnt}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-          {totalLive > 0 && (
-            <span className="ml-auto flex-shrink-0 text-[11px]" style={{ color: "#5e5c7a" }}>
-              {totalLive} matches live
-            </span>
-          )}
-        </div>
+        {/* Playbaji Layout Container */}
+        <div className="flex flex-1 max-w-[1440px] w-full mx-auto px-4 mt-4 lg:mt-6 gap-4">
 
-        {/* Mobile Sport Tabs */}
-        <div className="lg:hidden flex overflow-x-auto scrollbar-hide px-2 py-2 gap-1.5"
-          style={{ background: "#131220", borderBottom: "1px solid #2d2c45" }}>
-          {SPORT_TABS.map(s => {
-            const active = selectedSport === s.id;
-            return (
-              <button key={String(s.id)} onClick={() => setSelectedSport(s.id)}
-                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition-all"
-                style={{
-                  background: active ? "#e8173a" : "#1a192a", color: active ? "#fff" : "#6664a8",
-                  border: active ? "1px solid #e8173a" : "1px solid #2d2c45"
-                }}>
-                <span>{s.icon}</span>
-                <span>{s.label}</span>
-                {s.id !== undefined && (matchCounts[String(s.id)] ?? 0) > 0 && (
-                  <span className="text-[10px] font-black px-1 rounded-full"
-                    style={{ background: "rgba(255,255,255,0.2)" }}>
-                    {matchCounts[String(s.id)]}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* 3-Column Main Layout */}
-        <div className="flex flex-1 max-w-[1400px] w-full mx-auto">
-          <LeftSidebar
-            selectedSport={selectedSport}
-            onSelectSport={setSelectedSport}
-            matchCounts={matchCounts}
-          />
-          <main className="flex-1 min-w-0">
-            <MatchList
-              sportId={selectedSport}
-              onCountChange={handleCountChange}
+          {/* LEFT SIDEBAR (Hidden on mobile) */}
+          <div className="hidden lg:block w-[240px] flex-shrink-0">
+            <LeftSidebar
+              selectedSport={selectedSport}
+              onSelectSport={setSelectedSport}
+              matchCounts={matchCounts}
             />
-            {/* Casino section below live matches */}
-            <div className="border-t" style={{ borderColor: "#2a2a4a" }}>
-              <CasinoGrid />
+          </div>
+
+          {/* MAIN CENTER CONTENT (Hero -> Matches -> Promos -> Casino) */}
+          <main className="flex-1 min-w-0 flex flex-col gap-6">
+            <HeroSection />
+
+            {/* LIVE MATCHES */}
+            <div className="bg-[var(--surface)] border border-[var(--border)] rounded overflow-hidden">
+              {/* Live Section Header Matching PB */}
+              <div className="bg-[var(--surface-3)] border-b border-[var(--border)] px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-[4px] h-[16px] bg-[var(--primary)] rounded-full"></div>
+                  <h2 className="text-white text-[16px] font-black uppercase tracking-tight">Live Highlights</h2>
+                </div>
+              </div>
+
+              <MatchList
+                sportId={selectedSport}
+                onCountChange={handleCountChange}
+              />
             </div>
+
+            {/* TWO BIG PROMO BANNERS */}
+            <PromoBanners />
+
+            {/* CASINO GRIDS (Exact visual clone) */}
+            <CasinoGrid title="Live Casino" games={LIVE_CASINO_GAMES} />
+            <CasinoGrid title="Slot Games" games={SLOT_GAMES} />
+
+            {/* SPACING AT BOTTOM */}
+            <div className="h-8"></div>
           </main>
-          <BetSlip bets={[]} onRemove={() => { }} onStakeChange={() => { }} onClear={() => { }} />
+
+          {/* RIGHT SIDEBAR (BetSlip) */}
+          <div className="hidden xl:block w-[300px] flex-shrink-0">
+            <BetSlip bets={[]} onRemove={() => { }} onStakeChange={() => { }} onClear={() => { }} />
+          </div>
+
         </div>
 
         <Footer />

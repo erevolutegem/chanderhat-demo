@@ -1,173 +1,150 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Search, Menu, X, ChevronDown, Wallet, Bell, LogOut } from "lucide-react";
+import React, { useState } from "react";
+import { Search, Menu, X, Wallet, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-
-const NAV_LINKS = [
-    { label: "In-Play", href: "/", badge: "LIVE", badgeColor: "#e8173a" },
-    { label: "Cricket", href: "/?sport=3", icon: "🏏" },
-    { label: "Soccer", href: "/?sport=1", icon: "⚽" },
-    { label: "Tennis", href: "/?sport=13", icon: "🎾" },
-    { label: "Basketball", href: "/?sport=18", icon: "🏀" },
-    { label: "Live Casino", href: "#", icon: "🎲" },
-    { label: "Slots", href: "#", icon: "🃏" },
-    { label: "Aviator", href: "#", icon: "✈️" },
-    { label: "Promotions", href: "#", icon: "🎁" },
-];
+import Image from "next/image";
 
 export default function Navbar({ onLoginClick }: { onLoginClick?: () => void }) {
     const { user, logout } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
-    const [searchOpen, setSearch] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
-
-    useEffect(() => {
-        const onScroll = () => setScrolled(window.scrollY > 4);
-        window.addEventListener("scroll", onScroll, { passive: true });
-        return () => window.removeEventListener("scroll", onScroll);
-    }, []);
 
     return (
         <>
-            <div className="sticky top-0 z-50" style={{ boxShadow: scrolled ? "0 4px 24px rgba(0,0,0,0.5)" : "none" }}>
+            {/* Playbaji Header - Dark, Dense, Professional */}
+            <div className="bg-[var(--bg)] border-b border-[var(--border)] sticky top-0 z-50">
+                <div className="max-w-[1440px] mx-auto px-4 h-[60px] flex items-center gap-4">
 
-                {/* ─── TOP BAR ─────────────────────────────────────────── */}
-                <div style={{ background: "linear-gradient(180deg,#1c1b2e 0%,#151424 100%)", borderBottom: "1px solid #2d2c45" }}>
-                    <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 16px", height: 58, display: "flex", alignItems: "center", gap: 10 }}>
+                    {/* Hamburger — mobile only */}
+                    <button onClick={() => setMenuOpen(true)} className="lg:hidden text-[var(--text-2)] p-1 flex">
+                        <Menu size={24} />
+                    </button>
 
-                        {/* Hamburger — mobile only */}
-                        <button onClick={() => setMenuOpen(true)} className="lg:hidden"
-                            style={{ background: "none", border: "none", color: "#9997b8", cursor: "pointer", padding: 4, display: "flex" }}>
-                            <Menu size={22} />
-                        </button>
+                    {/* Logo (Text/Brand) */}
+                    <a href="/" className="flex items-center gap-2 flex-shrink-0 text-white no-underline">
+                        <div className="hidden sm:flex flex-col leading-none">
+                            <span className="font-black text-[22px] tracking-tight">
+                                play<span className="text-[var(--primary)]">baji</span>
+                            </span>
+                        </div>
+                    </a>
 
-                        {/* Logo */}
-                        <a href="/" style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none", flexShrink: 0 }}>
-                            <div style={{
-                                width: 36, height: 36, borderRadius: 10,
-                                background: "linear-gradient(135deg, #e8173a 0%, #ff4d6d 100%)",
-                                display: "flex", alignItems: "center", justifyContent: "center",
-                                fontWeight: 900, color: "#fff", fontSize: 16, letterSpacing: -0.5,
-                                boxShadow: "0 2px 12px rgba(232,23,58,0.45)"
-                            }}>P</div>
-                            <div className="hidden sm:flex flex-col leading-none">
-                                <span style={{ fontWeight: 900, fontSize: 19, color: "#fff", letterSpacing: -0.8, lineHeight: 1 }}>
-                                    Play<span style={{ color: "#f5c518" }}>Baji</span>
-                                </span>
-                                <span style={{ fontSize: 9, fontWeight: 600, color: "#5e5c7a", letterSpacing: 2, textTransform: "uppercase", marginTop: 2 }}>SPORTS BETTING</span>
-                            </div>
-                        </a>
+                    {/* Desktop Search Bar (Centered, matching Playbaji) */}
+                    <div className="hidden lg:flex flex-1 max-w-[400px] ml-8">
+                        <div className="flex items-center bg-[var(--bg-2)] border border-[var(--border)] rounded w-full px-3 h-[36px] gap-2 focus-within:border-[var(--text-3)] transition-colors">
+                            <Search size={16} className="text-[var(--text-3)]" />
+                            <input
+                                placeholder="Search Events"
+                                className="bg-transparent border-none outline-none text-[13px] text-white w-full placeholder:text-[var(--text-3)]"
+                            />
+                        </div>
+                    </div>
 
-                        {/* Spacer */}
-                        <div style={{ flex: 1 }} />
+                    {/* Spacer for mobile */}
+                    <div className="flex-1 lg:hidden" />
 
-                        {/* Search */}
-                        {searchOpen ? (
-                            <div style={{ display: "flex", alignItems: "center", background: "#0d0c1a", border: "1px solid #3d3c58", borderRadius: 8, padding: "0 12px", height: 38, gap: 8, width: 220 }}>
-                                <Search size={13} color="#5e5c7a" />
-                                <input autoFocus onBlur={() => setSearch(false)} placeholder="Search teams, leagues…"
-                                    style={{ background: "none", border: "none", outline: "none", color: "#e2e1ef", fontSize: 13, width: "100%" }} />
-                            </div>
-                        ) : (
-                            <button onClick={() => setSearch(true)} className="hidden sm:flex" title="Search"
-                                style={{
-                                    background: "none", border: "none", cursor: "pointer",
-                                    color: "#5e5c7a", padding: 6, borderRadius: 6, transition: "color 0.15s"
-                                }}
-                                onMouseEnter={e => (e.currentTarget.style.color = "#9997b8")}
-                                onMouseLeave={e => (e.currentTarget.style.color = "#5e5c7a")}>
-                                <Search size={17} />
-                            </button>
-                        )}
-
-                        {/* Auth state: Logged In vs Logged Out */}
+                    {/* Right Side Actions / Auth */}
+                    <div className="flex items-center gap-3">
                         {user ? (
-                            <div className="flex items-center gap-4">
-                                {/* Balance chip */}
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                                    <Wallet size={14} className="text-emerald-500" />
-                                    <span className="text-[13px] font-bold text-emerald-400">৳ {user.balance.toFixed(2)}</span>
+                            <>
+                                {/* Balance */}
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-[var(--surface-2)] border border-[var(--border)]">
+                                    <Wallet size={14} className="text-[var(--primary)]" />
+                                    <span className="text-[13px] font-bold text-white">৳ {user.balance.toFixed(2)}</span>
                                 </div>
                                 {/* Username */}
-                                <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg" style={{ background: "#1a192a", border: "1px solid #2d2c45" }}>
-                                    <div className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white">
-                                        {user.username.charAt(0).toUpperCase()}
-                                    </div>
-                                    <span className="text-[13px] font-semibold text-[#e2e1ef]">{user.username}</span>
+                                <div className="hidden sm:flex items-center gap-2 px-2">
+                                    <span className="text-[13px] font-semibold text-[var(--text-2)]">{user.username}</span>
                                 </div>
-                                {/* Logout */}
-                                <button onClick={logout} title="Log out" className="p-1.5 text-slate-500 hover:text-red-400 transition-colors">
-                                    <LogOut size={16} />
+                                {/* Settings & Logout */}
+                                <button className="p-1.5 text-[var(--text-2)] hover:text-white transition-colors hidden sm:flex">
+                                    <Settings size={18} />
                                 </button>
-                            </div>
+                                <button onClick={logout} title="Log out" className="p-1.5 text-[var(--text-2)] hover:text-[var(--primary)] transition-colors">
+                                    <LogOut size={18} />
+                                </button>
+                            </>
                         ) : (
-                            <div className="flex items-center gap-2">
-                                <button onClick={onLoginClick}
-                                    style={{ padding: "8px 16px", background: "none", border: "1px solid #3d3c58", borderRadius: 8, color: "#e2e1ef", fontWeight: 600, fontSize: 13, cursor: "pointer", transition: "border-color 0.15s", whiteSpace: "nowrap" }}
-                                    onMouseEnter={e => (e.currentTarget.style.borderColor = "#9997b8")}
-                                    onMouseLeave={e => (e.currentTarget.style.borderColor = "#3d3c58")}>
-                                    Log in
+                            <>
+                                <button
+                                    onClick={onLoginClick}
+                                    className="px-4 h-[36px] bg-transparent text-white text-[13px] font-semibold hover:text-[var(--primary)] transition-colors whitespace-nowrap hidden sm:block"
+                                >
+                                    Login
                                 </button>
-                                <button onClick={onLoginClick}
-                                    style={{ padding: "8px 18px", background: "linear-gradient(135deg,#e8173a 0%,#c8102e 100%)", border: "none", borderRadius: 8, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 2px 10px rgba(232,23,58,0.35)", transition: "box-shadow 0.15s" }}
-                                    onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 4px 18px rgba(232,23,58,0.55)")}
-                                    onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 2px 10px rgba(232,23,58,0.35)")}>
-                                    Join Now
+                                <button
+                                    onClick={onLoginClick}
+                                    className="px-5 h-[36px] bg-[var(--primary)] text-black text-[13px] font-bold rounded hover:bg-[var(--primary-d)] transition-colors whitespace-nowrap"
+                                >
+                                    Sign Up
                                 </button>
-                            </div>
+                            </>
                         )}
-                    </div>
-                </div>
-
-                {/* ─── NAV STRIP ───────────────────────────────────────── */}
-                <div style={{ background: "#100f1e", borderBottom: "1px solid #2d2c45", overflowX: "auto" }} className="scrollbar-hide">
-                    <div style={{ maxWidth: 1440, margin: "0 auto", padding: "0 16px", display: "flex", alignItems: "stretch" }}>
-                        {NAV_LINKS.map(({ label, href, icon, badge, badgeColor }) => (
-                            <a key={label} href={href}
-                                style={{
-                                    display: "flex", alignItems: "center", gap: 5, padding: "0 14px", height: 40, textDecoration: "none",
-                                    fontSize: 13, fontWeight: 600, color: "#9997b8", whiteSpace: "nowrap", flexShrink: 0,
-                                    borderBottom: "2px solid transparent", transition: "color 0.15s, border-color 0.15s"
-                                }}
-                                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "#fff"; (e.currentTarget as HTMLElement).style.borderBottomColor = "#e8173a"; }}
-                                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#9997b8"; (e.currentTarget as HTMLElement).style.borderBottomColor = "transparent"; }}>
-                                {icon && <span style={{ fontSize: 13, lineHeight: 1 }}>{icon}</span>}
-                                {label}
-                                {badge && (
-                                    <span style={{ padding: "1px 5px", borderRadius: 4, background: badgeColor ?? "#e8173a", color: "#fff", fontSize: 9, fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase" }}>
-                                        {badge}
-                                    </span>
-                                )}
-                            </a>
-                        ))}
                     </div>
                 </div>
             </div>
 
-            {/* ─── MOBILE DRAWER ───────────────────────────────────────── */}
+            {/* MAIN HEADER NAV (Categories beneath header) */}
+            <div className="bg-[var(--surface)] border-b border-[var(--border)] overflow-x-auto scrollbar-hide hidden lg:block">
+                <div className="max-w-[1440px] mx-auto px-4 flex items-center h-[50px]">
+                    {[
+                        { label: "Home", href: "/" },
+                        { label: "In-Play", href: "/#", active: true }, // Playbaji highlights In-Play often
+                        { label: "Multi Markets", href: "/#" },
+                        { label: "Cricket", href: "/?sport=3" },
+                        { label: "Soccer", href: "/?sport=1" },
+                        { label: "Tennis", href: "/?sport=13" },
+                        { label: "Premium Casino", href: "/#" },
+                        { label: "Live Casino", href: "/#" },
+                        { label: "Slot", href: "/#" },
+                        { label: "Table", href: "/#" },
+                        { label: "E-Game", href: "/#" },
+                        { label: "Aviator", href: "/#" }
+                    ].map((item, i) => (
+                        <a
+                            key={i}
+                            href={item.href}
+                            className={`px-4 h-full flex items-center text-[14px] font-semibold whitespace-nowrap transition-colors border-b-[3px]
+                                ${item.active
+                                    ? "text-[var(--primary)] border-[var(--primary)]"
+                                    : "text-white border-transparent hover:text-[var(--primary)]"
+                                }
+                            `}
+                        >
+                            {item.label}
+                        </a>
+                    ))}
+                </div>
+            </div>
+
+            {/* MOBILE DRAWER */}
             {menuOpen && (
                 <>
-                    <div onClick={() => setMenuOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 200, backdropFilter: "blur(4px)" }} />
-                    <div className="slide-down" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 201, background: "#1c1b2e", borderBottom: "2px solid #2d2c45", paddingBottom: 16 }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: "1px solid #2d2c45" }}>
-                            <span style={{ fontWeight: 900, fontSize: 17, color: "#fff" }}>Play<span style={{ color: "#f5c518" }}>Baji</span></span>
-                            <button onClick={() => setMenuOpen(false)} style={{ background: "none", border: "none", color: "#9997b8", cursor: "pointer" }}><X size={20} /></button>
+                    <div onClick={() => setMenuOpen(false)} className="fixed inset-0 bg-black/80 z-[200] backdrop-blur-sm" />
+                    <div className="slide-down fixed top-0 left-0 right-0 z-[201] bg-[var(--bg)] border-b border-[var(--border)] pb-4">
+                        <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
+                            <span className="font-black text-[20px] text-white">play<span className="text-[var(--primary)]">baji</span></span>
+                            <button onClick={() => setMenuOpen(false)} className="text-[var(--text-2)] p-1"><X size={24} /></button>
                         </div>
-                        {NAV_LINKS.map(({ label, href, icon, badge }) => (
-                            <a key={label} href={href} onClick={() => setMenuOpen(false)}
-                                style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 20px", textDecoration: "none", color: "#e2e1ef", fontSize: 14, fontWeight: 600, borderBottom: "1px solid #201f30" }}>
-                                {icon && <span>{icon}</span>}
-                                <span style={{ flex: 1 }}>{label}</span>
-                                {badge && <span style={{ padding: "2px 6px", borderRadius: 4, background: "#e8173a", color: "#fff", fontSize: 10, fontWeight: 800 }}>{badge}</span>}
+                        {[
+                            { label: "Home", href: "/" },
+                            { label: "In-Play", href: "/#" },
+                            { label: "Cricket", href: "/?sport=3" },
+                            { label: "Soccer", href: "/?sport=1" },
+                            { label: "Live Casino", href: "/#" },
+                            { label: "Slot Games", href: "/#" }
+                        ].map((link) => (
+                            <a key={link.label} href={link.href} onClick={() => setMenuOpen(false)}
+                                className="flex items-center px-5 py-3.5 text-white text-[15px] font-semibold border-b border-[var(--border)]">
+                                {link.label}
                             </a>
                         ))}
-                        <div style={{ padding: "12px 16px", display: "flex", gap: 8 }}>
+                        <div className="p-4 flex gap-3">
                             {user ? (
-                                <button onClick={() => { logout(); setMenuOpen(false); }} style={{ flex: 1, padding: "11px 0", borderRadius: 8, border: "1px solid #3d3c58", background: "rgba(255,0,0,0.1)", color: "#ff4d4d", fontWeight: 700, cursor: "pointer" }}>Log out</button>
+                                <button onClick={() => { logout(); setMenuOpen(false); }} className="flex-1 py-3 rounded bg-red-500/10 text-red-500 font-bold border border-red-500/20">Log out</button>
                             ) : (
                                 <>
-                                    <button onClick={() => { onLoginClick?.(); setMenuOpen(false); }} style={{ flex: 1, padding: "11px 0", borderRadius: 8, border: "1px solid #3d3c58", background: "none", color: "#fff", fontWeight: 700, cursor: "pointer" }}>Log in</button>
-                                    <button onClick={() => { onLoginClick?.(); setMenuOpen(false); }} style={{ flex: 1, padding: "11px 0", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#e8173a,#c8102e)", color: "#fff", fontWeight: 700, cursor: "pointer" }}>Join Now</button>
+                                    <button onClick={() => { onLoginClick?.(); setMenuOpen(false); }} className="flex-1 py-3 rounded border border-[var(--border)] text-white font-bold">Login</button>
+                                    <button onClick={() => { onLoginClick?.(); setMenuOpen(false); }} className="flex-1 py-3 rounded bg-[var(--primary)] text-black font-bold">Sign Up</button>
                                 </>
                             )}
                         </div>

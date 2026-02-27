@@ -5,42 +5,55 @@
    DESIGN TOKENS
 ═══════════════════════════════════════════════════════════════ */
 :root {
-  --bg: #0f0e17;
-  --bg-2: #13121f;
-  --surface: #1a192a;
-  --surface-2: #201f30;
-  --surface-3: #272638;
-  --border: #2d2c45;
-  --border-2: #3d3c58;
+  --bg: #1e252b;
+  /* Playbaji main dark background */
+  --bg-2: #2a3138;
+  /* Playbaji secondary surface */
+  --surface: #20272e;
+  /* Card backgrounds */
+  --surface-2: #2b333a;
+  /* Hover states */
+  --surface-3: #1a1e23;
+  /* Darker insets */
+  --border: #353b42;
+  /* Subtle dividers */
+  --border-2: #464c54;
 
-  --primary: #e8173a;
-  --primary-d: #b8102e;
-  --primary-glow: rgba(232, 23, 58, 0.28);
+  --primary: #f2c811;
+  /* Playbaji Yellow */
+  --primary-d: #dcb30a;
+  --primary-glow: rgba(242, 200, 17, 0.28);
 
-  --gold: #f5c518;
-  --gold-d: #c9a012;
+  --gold: #f2c811;
+  --gold-d: #dcb30a;
+
+  --custom-purple: #3a0f7d;
+  /* Play Now Casino Button color */
+  --custom-purple-d: #2a0a5e;
 
   --back: #6bbde6;
   --back-d: #4da8d8;
   --lay: #f47faa;
   --lay-d: #dd5f8f;
 
-  --live: #e8173a;
+  --live: #f2c811;
+  /* Changed live pulse to yellow to match brand */
   --green: #22c55e;
   --green-d: #16a34a;
 
-  --text: #e2e1ef;
-  --text-2: #9997b8;
-  --text-3: #5e5c7a;
+  --text: #ffffff;
+  --text-2: #a5aeb7;
+  /* Playbaji muted text */
+  --text-3: #6b727a;
 
   --radius-sm: 4px;
   --radius: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.7);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -207,13 +220,14 @@ body {
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  border-radius: 20px;
-  background: rgba(232, 23, 58, 0.14);
-  color: var(--primary);
+  border-radius: 4px;
+  /* Playbaji uses squarer badges */
+  background: var(--primary);
+  color: #000;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.5px;
-  border: 1px solid rgba(232, 23, 58, 0.3);
+  border: none;
   text-transform: uppercase;
 }
 
@@ -277,19 +291,20 @@ body {
 ═══════════════════════════════════════════════════════════════ */
 .btn-primary {
   padding: 9px 20px;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
+  /* Playbaji buttons are squarer */
   background: var(--primary);
-  color: #fff;
-  font-weight: 700;
+  color: #000;
+  /* Yellow bg requires black text */
+  font-weight: 800;
   font-size: 13px;
   border: none;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  transition: filter 0.15s, transform 0.1s;
 }
 
 .btn-primary:hover {
-  background: var(--primary-d);
-  box-shadow: 0 4px 16px var(--primary-glow);
+  filter: brightness(1.1);
 }
 
 .btn-primary:active {

@@ -1,79 +1,51 @@
 "use client";
-import React from "react";
-import Image from "next/image";
+import React from 'react';
+import Image from 'next/image';
 
-const GAMES = [
-    { id: "sports", title: "Sports", img: "/images/casino/sports.webp", tag: "HOT", badge: "🏆" },
-    { id: "aviator", title: "Aviator", img: "/images/casino/aviator.webp", tag: "CRASH", badge: "✈️" },
-    { id: "evolution", title: "Evolution Gaming", img: "/images/casino/evolution.webp", tag: "LIVE", badge: "🎰" },
-    { id: "jili", title: "Jili Games", img: "/images/casino/jili.webp", tag: "SLOTS", badge: "🎮" },
-    { id: "pragmatic", title: "Pragmatic Play", img: "/images/casino/pragmatic.webp", tag: "SLOTS", badge: "🎯" },
-    { id: "sexy", title: "AE Sexy", img: "/images/casino/sexy.webp", tag: "LIVE", badge: "🃏" },
-    { id: "ezugi", title: "Ezugi Casino", img: "/images/casino/ezugi.webp", tag: "LIVE", badge: "♠️" },
-    { id: "saba", title: "Saba Sports", img: "/images/casino/saba.webp", tag: "SPORTS", badge: "⚽" },
-    { id: "slots", title: "Slot Games", img: "/images/casino/slots.webp", tag: "SLOTS", badge: "🎰" },
-    { id: "newking", title: "New King", img: "/images/casino/newking.webp", tag: "NEW", badge: "👑" },
-    { id: "horseracing", title: "Horse Racing", img: "/images/casino/horseracing.webp", tag: "RACING", badge: "🐎" },
-];
+interface CasinoGame {
+    id: string;
+    name: string;
+    image: string; // The full cover path
+}
 
-const TAG_COLORS: Record<string, string> = {
-    HOT: "#e02020",
-    CRASH: "#ff6600",
-    LIVE: "#2ecc71",
-    SLOTS: "#9b59b6",
-    SPORTS: "#3498db",
-    NEW: "#ffd700",
-    RACING: "#e67e22",
-};
-
-export default function CasinoGrid() {
+export default function CasinoGrid({ title, games }: { title: string, games: CasinoGame[] }) {
     return (
-        <section className="py-4 px-3">
-            {/* Section header */}
-            <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                    <span className="w-1 h-5 rounded-full" style={{ background: "#e02020" }} />
-                    <h2 className="font-black text-white text-base">Casino & Games</h2>
-                </div>
-                <button className="text-xs font-semibold px-3 py-1.5 rounded-full transition-all"
-                    style={{ background: "#1e1e3a", color: "#7777aa", border: "1px solid #2a2a4a" }}>
-                    View All
-                </button>
-            </div>
+        <section className="mt-8">
+            <h2 className="text-white text-[18px] lg:text-[20px] font-black mb-4 uppercase tracking-tight flex items-center gap-2">
+                <div className="w-[4px] h-[18px] bg-[var(--primary)] rounded-full"></div>
+                {title}
+            </h2>
 
-            {/* Game Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-                {GAMES.map(game => (
-                    <button key={game.id}
-                        className="group relative rounded-xl overflow-hidden aspect-[3/4] transition-all hover:scale-105 hover:shadow-2xl focus:outline-none"
-                        style={{ border: "1px solid #2a2a4a" }}>
-                        <Image
-                            src={game.img}
-                            alt={game.title}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 16vw"
-                        />
-                        {/* Hover overlay */}
-                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2"
-                            style={{ background: "rgba(0,0,0,0.7)" }}>
-                            <div className="text-2xl">{game.badge}</div>
-                            <span className="text-xs font-black text-white px-2.5 py-1 rounded-full"
-                                style={{ background: "#e02020" }}>PLAY NOW</span>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
+                {games.map((game) => (
+                    <div
+                        key={game.id}
+                        className="relative w-full aspect-[4/3] rounded-[4px] overflow-hidden group cursor-pointer border border-[var(--border)]"
+                    >
+                        {/* Background Image (Placholder fallback for now) */}
+                        <div className="absolute inset-0 bg-slate-800">
+                            {/* <Image src={game.image} fill alt={game.name} className="object-cover group-hover:scale-105 transition-transform duration-300" /> */}
+                            {/* Simple colored block to mock game art */}
+                            <div className="w-full h-full bg-gradient-to-br from-indigo-900 to-purple-900 group-hover:scale-110 transition-transform duration-500 flex items-center justify-center p-4 text-center">
+                                <span className="text-white/20 font-black text-2xl">{game.name}</span>
+                            </div>
                         </div>
-                        {/* Tag badge */}
-                        <div className="absolute top-1.5 left-1.5">
-                            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-sm text-white"
-                                style={{ background: TAG_COLORS[game.tag] ?? "#e02020" }}>
-                                {game.tag}
+
+                        {/* Playbaji Bottom Overlay Strip */}
+                        <div className="absolute bottom-0 left-0 right-0 h-[36px] bg-black/80 backdrop-blur-sm flex items-center justify-between pl-3 pr-0 border-t border-[var(--border)] group-hover:bg-black transition-colors">
+                            {/* Game Name */}
+                            <span className="text-white text-[12px] md:text-[14px] font-bold truncate pr-2">
+                                {game.name}
                             </span>
+
+                            {/* Slanted "Play Now" Button matching Playbaji */}
+                            <div className="h-full bg-[var(--custom-purple)] flex items-center justify-center px-3"
+                                style={{ clipPath: "polygon(15% 0, 100% 0, 100% 100%, 0 100%)" }}
+                            >
+                                <span className="text-white text-[11px] font-bold uppercase tracking-wide ml-1">Play Now</span>
+                            </div>
                         </div>
-                        {/* Title at bottom */}
-                        <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5"
-                            style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.85))" }}>
-                            <p className="text-[10px] font-bold text-white truncate">{game.title}</p>
-                        </div>
-                    </button>
+                    </div>
                 ))}
             </div>
         </section>

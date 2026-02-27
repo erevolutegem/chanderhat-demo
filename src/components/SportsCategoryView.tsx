@@ -128,10 +128,28 @@ export default function SportsCategoryView({ sportId, onSelectGame }: Props) {
             )}
 
             {!loading && matches.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-24 gap-3">
-                    <Activity className="w-10 h-10 text-slate-800" />
-                    <p className="text-slate-500 font-semibold text-sm">No matches right now</p>
-                    {errorMsg && <p className="text-slate-700 text-xs text-center max-w-sm">{errorMsg}</p>}
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                    <div className="text-5xl">
+                        {tab === "inplay"
+                            ? (SPORT_NAMES[String(sportId)] === "Cricket" ? "🏏" :
+                                SPORT_NAMES[String(sportId)] === "Soccer" ? "⚽" :
+                                    SPORT_NAMES[String(sportId)] === "Tennis" ? "🎾" :
+                                        SPORT_NAMES[String(sportId)] === "Basketball" ? "🏀" : "🎯")
+                            : "📅"}
+                    </div>
+                    <div className="text-center space-y-1">
+                        <p className="text-slate-400 font-semibold text-sm">
+                            {tab === "inplay"
+                                ? `No live ${SPORT_NAMES[String(sportId)] || "sport"} matches right now`
+                                : `No ${tab} scheduled matches found`}
+                        </p>
+                        <p className="text-slate-600 text-xs max-w-xs">
+                            {tab === "inplay"
+                                ? "Live matches appear here as they start. Check back later or try the Today tab."
+                                : "Upcoming matches will appear here once scheduled."}
+                        </p>
+                    </div>
+                    {errorMsg && <p className="text-red-900 text-xs text-center max-w-sm">{errorMsg}</p>}
                 </div>
             )}
 
